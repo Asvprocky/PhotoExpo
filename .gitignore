@@ -1,0 +1,6 @@
+# Root IDE
+.idea/
+*.iml
+
+# OS / Misc
+.DS_Store
