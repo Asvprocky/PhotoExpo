@@ -1,5 +1,6 @@
 package com.example.backend.domain;
 
+import com.example.backend.dto.UserRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,35 +27,44 @@ public class User {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "user_name", nullable = false, updatable = false)
-    private String username;
-
-    @Column(name = "password", nullable = false)
-    private String password;
-
-    @Column(name = "nickname", nullable = false, unique = true)
-    private String nickname;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "password", nullable = false)
+    private String password;
+
+
+    @Column(name = "user_name", nullable = false, updatable = false)
+    private String username;
+
+
+    @Column(name = "nickname", nullable = false)
+    private String nickname;
+
+
     @Column(name = "is_lock", nullable = false)
     private Boolean isLock;
 
+
     @Column(name = "is_social", nullable = false)
     private Boolean isSocial;
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "social_provider_type")
     private SocialProviderType socialProviderType;
 
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role_type")
     private UserRoleType userRoleType;
 
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
 
     @LastModifiedDate
     @Column(name = "updated_at")
@@ -79,4 +89,10 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<SnsLinks> snsLinks;
+
+    public void updateUser(UserRequestDTO dto) {
+        this.email = dto.getEmail();
+        this.username = dto.getUsername();
+        this.nickname = dto.getNickname();
+    }
 }
