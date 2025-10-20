@@ -20,7 +20,7 @@ import java.util.List;
 @Getter
 @EntityListeners({AuditingEntityListener.class})
 @Table(name = "users")
-public class User {
+public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +29,7 @@ public class User {
 
 
     @Column(name = "email", nullable = false, unique = true)
-    private String email;
+    private String email; // 식별자
 
     @Column(name = "password", nullable = false)
     private String password;

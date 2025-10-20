@@ -21,7 +21,7 @@ public class SnsLinks {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Users users;
 
     @Column(name = "platform")
     private String platform;

@@ -1,11 +1,14 @@
 package com.example.backend.service;
 
-import com.example.backend.domain.User;
 import com.example.backend.domain.UserRoleType;
+import com.example.backend.domain.Users;
 import com.example.backend.dto.UserRequestDTO;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,7 +18,7 @@ import java.nio.file.AccessDeniedException;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -36,7 +39,7 @@ public class UserService {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("이미 유저가 존재합니다.");
         }
-        User userEntity = User.builder()
+        Users userEntity = Users.builder()
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .isLock(false)
@@ -47,6 +50,26 @@ public class UserService {
                 .build();
 
         return userRepository.save(userEntity).getUserId();
+    }
+
+    /**
+     * 자체 로그인
+     * 파마리터에 email 로 검증 진행 해야하는데
+     * 스프링 시큐리티가 내부적으로 username 밖에 못알아 듣기때문에
+     * username 에 email 값을 넣어서 진행.
+     */
+    @Transactional(readOnly = true)
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Users userEntity = userRepository.findByEmailAndIsLockAndIsSocial(username, false, false)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+
+        return User.builder()
+                .username(userEntity.getEmail())
+                .password(userEntity.getPassword())
+                .roles(userEntity.getUserRoleType().name())
+                .accountLocked(userEntity.getIsLock())
+                .build();
     }
 
     /**
@@ -61,7 +84,7 @@ public class UserService {
         }
 
         //조회
-        User userEntity = userRepository.findByEmailAndIsLockAndIsSocial(dto.getEmail(), false, false)
+        Users userEntity = userRepository.findByEmailAndIsLockAndIsSocial(dto.getEmail(), false, false)
                 .orElseThrow(() -> new UsernameNotFoundException(dto.getEmail()));
 
         // 회원 정보 수정
