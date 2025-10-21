@@ -57,6 +57,7 @@ public class UserService implements UserDetailsService {
      * 파마리터에 email 로 검증 진행 해야하는데
      * 스프링 시큐리티가 내부적으로 username 밖에 못알아 듣기때문에
      * username 에 email 값을 넣어서 진행.
+     * CustomUserDetails 클래스를 따로 만들어서 UserDetails를 직접 구현하는 방법도 있음.
      */
     @Transactional(readOnly = true)
     @Override
@@ -64,7 +65,7 @@ public class UserService implements UserDetailsService {
         Users userEntity = userRepository.findByEmailAndIsLockAndIsSocial(username, false, false)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
-        return User.builder()
+        return User.builder() // 스프링 시큐리티의 User 객체
                 .username(userEntity.getEmail())
                 .password(userEntity.getPassword())
                 .roles(userEntity.getUserRoleType().name())
