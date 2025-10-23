@@ -28,6 +28,7 @@ public class UserService implements UserDetailsService {
      */
     @Transactional(readOnly = true)
     public Boolean existUser(UserRequestDTO dto) {
+        
         return userRepository.existsByEmail(dto.getEmail());
     }
 
@@ -36,6 +37,7 @@ public class UserService implements UserDetailsService {
      */
     @Transactional
     public Long addUser(UserRequestDTO dto) {
+
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("이미 유저가 존재합니다.");
         }
@@ -62,6 +64,7 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
         Users userEntity = userRepository.findByEmailAndIsLockAndIsSocial(username, false, false)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
