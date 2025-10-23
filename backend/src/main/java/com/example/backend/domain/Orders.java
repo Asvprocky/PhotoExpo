@@ -25,7 +25,7 @@ public class Orders {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private Users users;
+    private Users user;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status")

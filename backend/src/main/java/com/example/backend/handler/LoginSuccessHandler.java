@@ -24,7 +24,9 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        Authentication authentication) throws IOException, ServletException {
 
         // user , role
         String username = authentication.getName();

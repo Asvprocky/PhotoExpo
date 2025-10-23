@@ -24,7 +24,7 @@ public class Exhibition {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Users users;
+    private Users user;
 
     @Column(name = "title")
     private String title;

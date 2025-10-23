@@ -21,14 +21,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final AuthenticationSuccessHandler authenticationSuccessHandler;
+    private final AuthenticationSuccessHandler loginSuccessHandler; // LoginSuccessHandler 구현체 주입받음
 
-    
+
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
-                          @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler authenticationSuccessHandler) {
+                          @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler) {
 
         this.authenticationConfiguration = authenticationConfiguration;
-        this.authenticationSuccessHandler = authenticationSuccessHandler;
+        this.loginSuccessHandler = loginSuccessHandler;
 
     }
 
@@ -85,7 +85,7 @@ public class SecurityConfig {
                 );
         // 커스텀 필터 추가
         http
-                .addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), authenticationSuccessHandler), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
 
         // 세션 필터 설정 (STATELESS)
         http
