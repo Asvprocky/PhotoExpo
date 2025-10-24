@@ -1,24 +1,34 @@
 package com.example.backend.service;
 
+import com.example.backend.domain.SocialProviderType;
 import com.example.backend.domain.UserRoleType;
 import com.example.backend.domain.Users;
 import com.example.backend.dto.UserRequestDTO;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements UserDetailsService {
+public class UserService extends DefaultOAuth2UserService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -28,7 +38,7 @@ public class UserService implements UserDetailsService {
      */
     @Transactional(readOnly = true)
     public Boolean existUser(UserRequestDTO dto) {
-        
+
         return userRepository.existsByEmail(dto.getEmail());
     }
 
@@ -97,6 +107,78 @@ public class UserService implements UserDetailsService {
         return userRepository.save(userEntity).getUserId();
 
 
+    }
+
+    /**
+     * 소셜 로그인
+     * DefaultOAuth2UserService 의 loadUser 재정의
+     * super.loadUser()는 부모 클래스(DefaultOAuth2UserService)의 기본 구현체를 호출
+     */
+    @Override
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        // 부모 메서드 호출
+        OAuth2User oAuth2User = super.loadUser(userRequest);
+
+        // 데이터
+        Map<String, Object> attributes;
+        List<GrantedAuthority> authorities;
+
+        String email;
+        String role = UserRoleType.USER.name();
+        String username;
+        String nickname;
+
+        // Provider Google Or Naver 데이터 획득
+        String registrationId = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
+        if (registrationId.equals(SocialProviderType.NAVER.name())) {
+
+            attributes = (Map<String, Object>) oAuth2User.getAttributes().get("response"); // 유저 정보(JSON) 를 담은 맵(Map) Key-Value 구조
+
+            username = registrationId + "_" + attributes.get("id").toString(); //  각 소셜 로그인마다 id 충돌 방지
+            email = attributes.get("email").toString();
+            nickname = attributes.get("name").toString();
+
+        } else if (registrationId.equals(SocialProviderType.GOOGLE.name())) {
+
+            attributes = (Map<String, Object>) oAuth2User.getAttributes();
+
+            username = registrationId + "_" + attributes.get("sub").toString();
+            email = attributes.get("email").toString();
+            nickname = attributes.get("name").toString();
+
+        } else {
+            throw new OAuth2AuthenticationException("지원하지 않는 소셜 로그인 입니다.");
+        }
+        // 데이터베이스 조회 -> 존재하면 업데이트, 없으면 신규 가입
+        Optional<Users> userEntity = userRepository.findByEmailAndIsSocial(email, true);
+        if (userEntity.isPresent()) {
+            // role 조회
+            role = userEntity.get().getUserRoleType().name();
+
+            // 기존 유저 업데이트
+            UserRequestDTO dto = new UserRequestDTO();
+            dto.setEmail(email);
+            dto.setNickname(nickname);
+            userEntity.get().updateUser(dto);
+
+        } else {
+            // 신규 유저 추가
+            Users newUserEntity = Users.builder()
+                    .email(email)
+                    .username(username)
+                    .password("") // 소셜 로그인 이기떄문에 패스워드 불필요.
+                    .isLock(false)
+                    .isSocial(true)
+                    .socialProviderType(SocialProviderType.valueOf(registrationId))
+                    .userRoleType(UserRoleType.USER)
+                    .nickname(nickname)
+                    .build();
+            userRepository.save(newUserEntity);
+
+        }
+        authorities = List.of(new SimpleGrantedAuthority(role)); // 권한 리스트
+
+        return new CustomOAuth2User(attributes, authorities, username);
     }
 
 

@@ -64,6 +64,11 @@ public class SecurityConfig {
         http
                 .formLogin(AbstractHttpConfigurer::disable);
 
+        //OAuth2 인증용
+//        http
+//                .oauth2Login(oauth2 -> oauth2
+//                        .successHandler());
+
         // 기존 Basic 기반 인증 필터 disable
         http
                 .httpBasic(AbstractHttpConfigurer::disable);

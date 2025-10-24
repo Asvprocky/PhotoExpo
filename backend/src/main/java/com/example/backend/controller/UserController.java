@@ -20,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * 자체 로그인 유저 존재 확인ㄹ
+     * 자체 로그인 유저 존재 확인
      */
     @PostMapping(value = "/user/exist", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Boolean> existUserApi(
@@ -40,5 +40,5 @@ public class UserController {
         Map<String, Long> responseBody = Collections.singletonMap("userEntityId", userId);
         return ResponseEntity.status(201).body(responseBody);
     }
-    
+
 }

@@ -14,4 +14,6 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     Optional<Users> findByEmailAndIsLockAndIsSocial(String email, Boolean isLock, Boolean isSocial);
 
 
+    // loadUser 데이터 베이스 조회
+    Optional<Users> findByEmailAndIsSocial(String email, boolean isSocial);
 }
