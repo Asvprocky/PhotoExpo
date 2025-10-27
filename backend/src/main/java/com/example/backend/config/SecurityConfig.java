@@ -22,13 +22,16 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final AuthenticationSuccessHandler loginSuccessHandler; // LoginSuccessHandler 구현체 주입받음
+    private final AuthenticationSuccessHandler socialSuccessHandler;
 
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
-                          @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler) {
+                          @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler,
+                          @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.loginSuccessHandler = loginSuccessHandler;
+        this.socialSuccessHandler = socialSuccessHandler;
 
     }
 
@@ -65,9 +68,9 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable);
 
         //OAuth2 인증용
-//        http
-//                .oauth2Login(oauth2 -> oauth2
-//                        .successHandler());
+        http
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(socialSuccessHandler));
 
         // 기존 Basic 기반 인증 필터 disable
         http

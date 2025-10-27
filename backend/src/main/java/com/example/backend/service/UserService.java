@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.example.backend.domain.SocialProviderType;
 import com.example.backend.domain.UserRoleType;
 import com.example.backend.domain.Users;
+import com.example.backend.dto.CustomOAuth2User;
 import com.example.backend.dto.UserRequestDTO;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -129,7 +130,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         String nickname;
 
         // Provider Google Or Naver 데이터 획득
-        String registrationId = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
+        String registrationId = userRequest.getClientRegistration().getRegistrationId().toUpperCase(); // provider ID (GOOGLE, NAVER)
         if (registrationId.equals(SocialProviderType.NAVER.name())) {
 
             attributes = (Map<String, Object>) oAuth2User.getAttributes().get("response"); // 유저 정보(JSON) 를 담은 맵(Map) Key-Value 구조
