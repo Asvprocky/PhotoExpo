@@ -1,5 +1,6 @@
 package com.example.backend.config;
 
+import com.example.backend.filter.JWTFilter;
 import com.example.backend.filter.LoginFilter;
 import com.example.backend.handler.LogoutSuccessHandler;
 import com.example.backend.service.JwtService;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -66,6 +68,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable);
 
         // CORS 설정
+
+        // JWTFilter Chain JWTFilter를 LogoutFilter 이전에 실행
+        http
+                .addFilterBefore(new JWTFilter(), LogoutFilter.class);
 
         // 로그아웃 필터 , RefreshToken 삭제 핸들러
         http
