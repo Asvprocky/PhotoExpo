@@ -3,6 +3,7 @@ package com.example.backend.repository;
 
 import com.example.backend.domain.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -17,5 +18,7 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     // loadUser 데이터 베이스 조회
     Optional<Users> findByEmailAndIsSocial(String email, boolean isSocial);
 
+    // 회원 삭제 , 탈퇴
+    @Transactional
     void deleteByEmail(String email);
 }

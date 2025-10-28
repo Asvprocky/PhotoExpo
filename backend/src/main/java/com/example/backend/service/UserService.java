@@ -5,6 +5,7 @@ import com.example.backend.domain.UserRoleType;
 import com.example.backend.domain.Users;
 import com.example.backend.dto.CustomOAuth2User;
 import com.example.backend.dto.UserRequestDTO;
+import com.example.backend.dto.UserResponseDTO;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -111,16 +112,16 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
     }
 
     /**
-     * 회원 탈퇴
+     * 회원 탈퇴, 제거
      */
     @Transactional
     public void deleteUser(UserRequestDTO dto) throws AccessDeniedException {
         // 본인과 어드민만 삭제 가능
         SecurityContext context = SecurityContextHolder.getContext();
-        String sessionUsername = context.getAuthentication().getName(); //로그인 시, username 필드에 email 값 즉 getName = Email
+        String sessionUserEmail = context.getAuthentication().getName(); //로그인 시, username 필드에 email 값 즉 getName = Email
         String role = context.getAuthentication().getAuthorities().iterator().next().getAuthority();
 
-        boolean isOwner = sessionUsername.equals(dto.getEmail());
+        boolean isOwner = sessionUserEmail.equals(dto.getEmail());
         boolean isAdmin = role.equals("ROLE_" + UserRoleType.ADMIN.name());
 
         if (!isOwner && !isAdmin) {
@@ -132,7 +133,23 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
 
         // refreshToken 제거
         jwtService.deleteRefreshTokenByEmail(dto.getEmail());
-        
+    }
+
+    /**
+     * 유저 정보 조회
+     */
+    @Transactional(readOnly = true)
+    public UserResponseDTO readUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName(); // Email 값
+        Users userEntity = userRepository.findByEmailAndIsSocial(email, false)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다" + email));
+
+        return new UserResponseDTO(
+                email,
+                userEntity.getIsSocial(),
+                userEntity.getUsername(),
+                userEntity.getNickname()
+        );
     }
 
     /**

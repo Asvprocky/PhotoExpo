@@ -1,6 +1,8 @@
 package com.example.backend.config;
 
 import com.example.backend.filter.LoginFilter;
+import com.example.backend.handler.LogoutSuccessHandler;
+import com.example.backend.service.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -23,16 +25,18 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final AuthenticationSuccessHandler loginSuccessHandler; // LoginSuccessHandler 구현체 주입받음
     private final AuthenticationSuccessHandler socialSuccessHandler;
+    private final JwtService jwtService;
 
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
                           @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler,
-                          @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler) {
+                          @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler,
+                          JwtService jwtService) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.loginSuccessHandler = loginSuccessHandler;
         this.socialSuccessHandler = socialSuccessHandler;
-
+        this.jwtService = jwtService;
     }
 
     /**
@@ -62,6 +66,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable);
 
         // CORS 설정
+
+        // 로그아웃 필터 , RefreshToken 삭제 핸들러
+        http
+                .logout(logout -> logout
+                        .addLogoutHandler(new LogoutSuccessHandler(jwtService)));
 
         // 기존 Form 기반 인증 필터들 disable
         http
