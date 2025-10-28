@@ -21,6 +21,11 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
 
+    /**
+     * 소셜 로그인 성공시
+     * authentication 매개변수에 들어온 인자를 파싱후 refreshToken 발급
+     * 발급한 토큰은 DB 에 저장됨과 쿠키 생성후 "refreshToken" 이라는 키값으로 브라우저에 저장
+     */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,

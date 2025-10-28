@@ -7,8 +7,10 @@ import com.example.backend.dto.CustomOAuth2User;
 import com.example.backend.dto.UserRequestDTO;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,7 +24,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +34,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     /**
      * 자체 로그인 회원 가입 (존재 여부 검증)
@@ -106,8 +108,31 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         userEntity.updateUser(dto);
 
         return userRepository.save(userEntity).getUserId();
+    }
 
+    /**
+     * 회원 탈퇴
+     */
+    @Transactional
+    public void deleteUser(UserRequestDTO dto) throws AccessDeniedException {
+        // 본인과 어드민만 삭제 가능
+        SecurityContext context = SecurityContextHolder.getContext();
+        String sessionUsername = context.getAuthentication().getName(); //로그인 시, username 필드에 email 값 즉 getName = Email
+        String role = context.getAuthentication().getAuthorities().iterator().next().getAuthority();
 
+        boolean isOwner = sessionUsername.equals(dto.getEmail());
+        boolean isAdmin = role.equals("ROLE_" + UserRoleType.ADMIN.name());
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedException("본인과 관리자만 삭제 할 수 있습니다");
+        }
+
+        // 유저 제거
+        userRepository.deleteByEmail(dto.getEmail());
+
+        // refreshToken 제거
+        jwtService.deleteRefreshTokenByEmail(dto.getEmail());
+        
     }
 
     /**
