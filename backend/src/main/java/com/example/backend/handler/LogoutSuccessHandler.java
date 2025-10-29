@@ -25,7 +25,6 @@ public class LogoutSuccessHandler implements LogoutHandler {
      * request.getInputStream()으로 바이트 스트림을 가져와서, BufferedReader로 한 줄씩 읽고, reduce로 합쳐서 하나의 문자열로 만듦
      * ObjectMapper를 사용해서 문자열(JSON)을 파싱
      * JsonNode로 JSON 객체를 얻고, "refreshToken" 키가 존재하면 값을 추출실행
-     * 없으면 null로 설정
      */
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {

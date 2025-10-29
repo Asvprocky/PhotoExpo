@@ -51,6 +51,7 @@ public class JWTUtil {
 
     /**
      * JWT 유효 여부 (위조, 시간, Access/Refresh 여부)
+     * True 일시 Access False 일시 Refresh
      */
     public static Boolean isValid(String token, Boolean isAccess) {
         try {
