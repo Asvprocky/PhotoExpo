@@ -77,6 +77,7 @@ public class JwtService {
         refreshCookie.setMaxAge(5); // 만료 시간을 5초로 짧게 설정해서 브라우저에서 삭제 되도함.
         response.addCookie(refreshCookie);
 
+        // 새로운 토큰 발급
         return new JWTResponseDTO(newAccessToken, newRefreshToken);
     }
 
@@ -118,6 +119,7 @@ public class JwtService {
         deleteRefreshToken(refreshToken); // DTO 기반 메서드는 flush 필요 없음.
         jwtRepository.save(newJwtRefreshToken);
 
+        // 새로운 토큰 발급
         return new JWTResponseDTO(newAccessToken, newRefreshToken);
     }
 
