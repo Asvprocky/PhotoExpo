@@ -1,6 +1,6 @@
 package com.example.backend.domain;
 
-import com.example.backend.dto.UserRequestDTO;
+import com.example.backend.dto.request.UserRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

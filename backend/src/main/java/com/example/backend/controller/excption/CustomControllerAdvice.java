@@ -1,4 +1,4 @@
-package com.example.backend.controller;
+package com.example.backend.controller.excption;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +9,7 @@ import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice
 public class CustomControllerAdvice {
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
         return ResponseEntity

@@ -1,4 +1,4 @@
-package com.example.backend.dto;
+package com.example.backend.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -36,7 +36,7 @@ public class UserRequestDTO {
     @NotBlank(groups = {addGroup.class, passwordGroup.class})
     @Size(min = 4)
     private String password;
-    
+
     // 닉네임 (서비스 내 별명)
     @NotBlank(groups = {addGroup.class, updateGroup.class})
     @Size(min = 2, max = 20)

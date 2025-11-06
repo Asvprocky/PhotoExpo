@@ -4,7 +4,7 @@ import com.example.backend.domain.UserRoleType;
 import com.example.backend.filter.JWTFilter;
 import com.example.backend.filter.LoginFilter;
 import com.example.backend.handler.LogoutSuccessHandler;
-import com.example.backend.service.JwtService;
+import com.example.backend.service.jwt.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

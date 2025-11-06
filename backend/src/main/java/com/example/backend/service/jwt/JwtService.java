@@ -1,9 +1,9 @@
-package com.example.backend.service;
+package com.example.backend.service.jwt;
 
 import com.example.backend.common.util.JWTUtil;
 import com.example.backend.domain.JwtRefresh;
-import com.example.backend.dto.JWTRequestDTO;
-import com.example.backend.dto.JWTResponseDTO;
+import com.example.backend.dto.request.JWTRequestDTO;
+import com.example.backend.dto.response.JWTResponseDTO;
 import com.example.backend.repository.JwtRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,7 +1,7 @@
 package com.example.backend.handler;
 
 import com.example.backend.common.util.JWTUtil;
-import com.example.backend.service.JwtService;
+import com.example.backend.service.jwt.JwtService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;

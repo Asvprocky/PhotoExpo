@@ -1,7 +1,7 @@
 package com.example.backend.handler;
 
 import com.example.backend.common.util.JWTUtil;
-import com.example.backend.service.JwtService;
+import com.example.backend.service.jwt.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -21,6 +21,7 @@ public class JwtRefresh {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //  논리적으로만 관계가 있는 값
     @Column(name = "email", nullable = false)
     private String email;
 

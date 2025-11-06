@@ -1,12 +1,13 @@
-package com.example.backend.service;
+package com.example.backend.service.user;
 
 import com.example.backend.domain.SocialProviderType;
 import com.example.backend.domain.UserRoleType;
 import com.example.backend.domain.Users;
-import com.example.backend.dto.CustomOAuth2User;
-import com.example.backend.dto.UserRequestDTO;
-import com.example.backend.dto.UserResponseDTO;
+import com.example.backend.dto.oauth2.CustomOAuth2User;
+import com.example.backend.dto.request.UserRequestDTO;
+import com.example.backend.dto.response.UserResponseDTO;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.service.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
