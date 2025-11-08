@@ -66,6 +66,7 @@ public class JwtService {
                 .refresh(newRefreshToken)
                 .build();
         deleteRefreshToken(refreshToken); // 가지고있던 검증 완료 된 refreshToken 삭제
+        System.out.println("JWT service, deleteRefreshToken : " + refreshToken);
         jwtRepository.flush(); // 같은 트랜잭션 내부라 : 삭제 -> 생성 문제 해결 (쿠키 기반 메서드는 flush 필요)
         jwtRepository.save(newJwtRefreshEntity); // 새로운 newRefreshToken 저장
 
@@ -153,6 +154,7 @@ public class JwtService {
      * JwtRepository 에 Transactional 선언하였기 때문에 따로 선언하지 않음
      */
     public void deleteRefreshToken(String refreshToken) {
+
         jwtRepository.deleteByRefresh(refreshToken);
     }
 
