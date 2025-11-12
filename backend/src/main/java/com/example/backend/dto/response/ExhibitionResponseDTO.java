@@ -8,4 +8,6 @@ public record ExhibitionResponseDTO(Long exhibitionId,
                                     String layout,
                                     String fontColor,
                                     Long userId) {
+    
+
 }

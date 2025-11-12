@@ -5,10 +5,9 @@ import com.example.backend.dto.response.ExhibitionResponseDTO;
 import com.example.backend.service.exhibition.ExhibitionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +24,12 @@ public class ExhibitionController {
         ExhibitionResponseDTO response = exhibitionService.createExhibition(dto);
 
         return ResponseEntity.status(201).body(response);
+    }
+
+    @GetMapping(value = "/all")
+    public ResponseEntity<List<ExhibitionResponseDTO>> getAllExhibition() {
+        List<ExhibitionResponseDTO> exhibition = exhibitionService.getAllExhibition();
+        return ResponseEntity.status(200).body(exhibition);
 
     }
 }
