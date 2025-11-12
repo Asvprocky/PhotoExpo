@@ -9,6 +9,7 @@ import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,6 +88,26 @@ public class ExhibitionService {
                         exhibition.getUser().getUserId()
                 ))
                 .toList(); // 스트림 타입을 다시 리스트로 변환
+    }
+
+    /**
+     * 단일 전시 조회
+     */
+    @Transactional(readOnly = true)
+    public ExhibitionResponseDTO getExhibitionById(Long exhibitionId) {
+        Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
+                .orElseThrow(() -> new UsernameNotFoundException("존재 하지 않는 유저 입니다."));
+
+        return new ExhibitionResponseDTO(
+                exhibition.getExhibitionId(),
+                exhibition.getTitle(),
+                exhibition.getContents(),
+                exhibition.getTemplate(),
+                exhibition.getBackground(),
+                exhibition.getLayout(),
+                exhibition.getFontColor(),
+                exhibition.getUser().getUserId()
+        );
     }
 
 

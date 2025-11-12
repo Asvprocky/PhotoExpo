@@ -16,6 +16,9 @@ public class ExhibitionController {
 
     private final ExhibitionService exhibitionService;
 
+    /**
+     * 전시회 생성
+     */
     @PostMapping(value = "/create", consumes = "application/json")
     public ResponseEntity<ExhibitionResponseDTO> createExhibition(
             @RequestBody ExhibitionRequestDTO dto
@@ -26,9 +29,22 @@ public class ExhibitionController {
         return ResponseEntity.status(201).body(response);
     }
 
+    /**
+     * 모든 전시회 조회
+     */
     @GetMapping(value = "/all")
     public ResponseEntity<List<ExhibitionResponseDTO>> getAllExhibition() {
         List<ExhibitionResponseDTO> exhibition = exhibitionService.getAllExhibition();
+        return ResponseEntity.status(200).body(exhibition);
+
+    }
+
+    /**
+     * 단일 전시회 조회
+     */
+    @GetMapping(value = "/{exhibitionId}")
+    public ResponseEntity<ExhibitionResponseDTO> getExhibitionById(@PathVariable Long exhibitionId) {
+        ExhibitionResponseDTO exhibition = exhibitionService.getExhibitionById(exhibitionId);
         return ResponseEntity.status(200).body(exhibition);
 
     }
