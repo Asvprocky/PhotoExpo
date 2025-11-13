@@ -41,6 +41,7 @@ public class ExhibitionController {
 
     /**
      * 단일 전시회 조회
+     * 프론트에서 수정용도로 두가지 사용
      */
     @GetMapping(value = "/{exhibitionId}")
     public ResponseEntity<ExhibitionResponseDTO> getExhibitionById(@PathVariable Long exhibitionId) {
@@ -60,6 +61,7 @@ public class ExhibitionController {
 
     /**
      * 자신 전시회 수정
+     * 수정할때 기존 값은 단일 전시회 조회 에서 가져와서 사용 할 생각
      */
     @PutMapping(value = "/{exhibitionId}", consumes = "application/json")
     public ResponseEntity<ExhibitionResponseDTO> updateExhibition(
@@ -68,5 +70,15 @@ public class ExhibitionController {
 
         ExhibitionResponseDTO exhibition = exhibitionService.updateExhibition(exhibitionId, dto);
         return ResponseEntity.status(200).body(exhibition);
+    }
+
+    /**
+     * 자신 전시회 삭제
+     */
+    @DeleteMapping(value = "/delete/{exhibitionId}")
+    public ResponseEntity<Void> deleteExhibition(@PathVariable Long exhibitionId) {
+        exhibitionService.deleteExhibition(exhibitionId);
+        return ResponseEntity.status(204).build();
+
     }
 }

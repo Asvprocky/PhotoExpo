@@ -162,5 +162,16 @@ public class ExhibitionService {
         );
     }
 
+    /**
+     * 자신 전시회 삭제
+     */
+    @Transactional
+    public void deleteExhibition(Long exhibitionId) {
+        Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
+                .orElseThrow(() -> new RuntimeException("Exhibition not found"));
+        
+        exhibitionRepository.delete(exhibition);
+    }
+
 
 }
