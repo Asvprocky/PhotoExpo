@@ -1,5 +1,6 @@
 package com.example.backend.domain;
 
+import com.example.backend.dto.request.ExhibitionRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,6 +53,20 @@ public class Exhibition {
 
     @Column(name = "exhibition_view_count")
     private Long exhibitionViewCount;
+
+
+    /**
+     * 수정 요청 메서드
+     */
+    public void updateExhibition(ExhibitionRequestDTO dto) {
+        this.title = dto.getTitle();
+        this.contents = dto.getContents();
+        this.template = dto.getTemplate();
+        this.background = dto.getBackground();
+        this.layout = dto.getLayout();
+        this.fontColor = dto.getFontColor();
+
+    }
 
 
 }

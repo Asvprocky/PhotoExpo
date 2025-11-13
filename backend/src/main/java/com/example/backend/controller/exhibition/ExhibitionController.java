@@ -48,4 +48,25 @@ public class ExhibitionController {
         return ResponseEntity.status(200).body(exhibition);
 
     }
+
+    /**
+     * 자신 전시회 조회
+     */
+    @GetMapping(value = "/my")
+    public ResponseEntity<List<ExhibitionResponseDTO>> getMyExhibition() {
+        List<ExhibitionResponseDTO> exhibition = exhibitionService.getMyExhibition();
+        return ResponseEntity.status(200).body(exhibition);
+    }
+
+    /**
+     * 자신 전시회 수정
+     */
+    @PutMapping(value = "/{exhibitionId}", consumes = "application/json")
+    public ResponseEntity<ExhibitionResponseDTO> updateExhibition(
+            @PathVariable Long exhibitionId,
+            @RequestBody ExhibitionRequestDTO dto) {
+
+        ExhibitionResponseDTO exhibition = exhibitionService.updateExhibition(exhibitionId, dto);
+        return ResponseEntity.status(200).body(exhibition);
+    }
 }

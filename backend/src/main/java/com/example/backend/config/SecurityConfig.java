@@ -137,7 +137,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/jwt/exchange", "/jwt/refresh", "exhibition/all", "exhibition/{exhibitionId}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/exist", "/user").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/user").hasRole(UserRoleType.USER.name())
+                        .requestMatchers(HttpMethod.GET, "/user", "exhibition/my").hasRole(UserRoleType.USER.name())
                         .requestMatchers(HttpMethod.PUT, "/user").hasRole(UserRoleType.USER.name())
                         .requestMatchers(HttpMethod.DELETE, "/user").hasRole(UserRoleType.USER.name())
                         .anyRequest().authenticated()

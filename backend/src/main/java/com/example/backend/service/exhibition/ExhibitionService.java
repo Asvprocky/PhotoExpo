@@ -92,11 +92,63 @@ public class ExhibitionService {
 
     /**
      * 단일 전시 조회
+     * PathVariable 통해 들어온 전시회 id 값을 가져와서 조회
      */
     @Transactional(readOnly = true)
     public ExhibitionResponseDTO getExhibitionById(Long exhibitionId) {
         Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
                 .orElseThrow(() -> new UsernameNotFoundException("존재 하지 않는 유저 입니다."));
+
+        return new ExhibitionResponseDTO(
+                exhibition.getExhibitionId(),
+                exhibition.getTitle(),
+                exhibition.getContents(),
+                exhibition.getTemplate(),
+                exhibition.getBackground(),
+                exhibition.getLayout(),
+                exhibition.getFontColor(),
+                exhibition.getUser().getUserId()
+        );
+    }
+
+    /**
+     * 자신 전시회 조회
+     * 모든 전시회 조회로직에서 SecurityContextHolder 에 담겨있는 자신의 이름 꺼내와서
+     * 유효성 검증후 자기자신 전시회 전체 목록 불러옴
+     */
+    @Transactional(readOnly = true)
+    public List<ExhibitionResponseDTO> getMyExhibition() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Exhibition> exhibitions = exhibitionRepository.findByUserOrderByCreatedAtDesc(user);
+        log.info("Exhibition Service, getMyExhibition - exhibitions : {}", exhibitions);
+
+        return exhibitions.stream()
+                .map(exhibition -> new ExhibitionResponseDTO(
+                        exhibition.getExhibitionId(),
+                        exhibition.getTitle(),
+                        exhibition.getContents(),
+                        exhibition.getTemplate(),
+                        exhibition.getBackground(),
+                        exhibition.getLayout(),
+                        exhibition.getFontColor(),
+                        exhibition.getUser().getUserId()
+                )).toList();
+    }
+
+    /**
+     * 전시 수정
+     */
+    @Transactional
+    public ExhibitionResponseDTO updateExhibition(Long exhibitionId, ExhibitionRequestDTO dto) {
+        Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
+                .orElseThrow(() -> new RuntimeException("Exhibition not found"));
+        log.info("Exhibition Service, updateExhibition - exhibition : {}", exhibition);
+
+        // 수정할 필드들만 업데이트
+        exhibition.updateExhibition(dto);
 
         return new ExhibitionResponseDTO(
                 exhibition.getExhibitionId(),
