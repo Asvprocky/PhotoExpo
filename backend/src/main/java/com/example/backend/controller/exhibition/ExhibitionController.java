@@ -75,7 +75,7 @@ public class ExhibitionController {
     /**
      * 자신 전시회 삭제
      */
-    @DeleteMapping(value = "/delete/{exhibitionId}")
+    @DeleteMapping(value = "/{exhibitionId}")
     public ResponseEntity<Void> deleteExhibition(@PathVariable Long exhibitionId) {
         exhibitionService.deleteExhibition(exhibitionId);
         return ResponseEntity.status(204).build();

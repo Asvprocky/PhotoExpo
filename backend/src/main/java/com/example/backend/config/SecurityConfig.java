@@ -135,11 +135,19 @@ public class SecurityConfig {
         // 인가
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/jwt/exchange", "/jwt/refresh", "exhibition/all", "exhibition/{exhibitionId}").permitAll()
+                        // 1. 전시 조회 (전체 + 단일) 누구나 허용
+                        .requestMatchers(HttpMethod.GET, "/exhibition/all", "/exhibition/*").permitAll()
+
+                        // 2. 회원가입 등 공개
                         .requestMatchers(HttpMethod.POST, "/user/exist", "/user").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/user", "exhibition/my", "exhibition/{exhibitionId}", "exhibition/delete/{exhibitionId}").hasRole(UserRoleType.USER.name())
-                        .requestMatchers(HttpMethod.PUT, "/user").hasRole(UserRoleType.USER.name())
-                        .requestMatchers(HttpMethod.DELETE, "/user").hasRole(UserRoleType.USER.name())
+                        .requestMatchers("/jwt/exchange", "/jwt/refresh").permitAll()
+
+                        // 3. USER 권한 필요
+                        .requestMatchers(HttpMethod.GET, "/exhibition/my", "/user").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/exhibition/create", "s3/upload").hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT, "/exhibition/*").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/exhibition/*").hasRole("USER")
+                        // 4. 그외 모든 요청 인증 필요
                         .anyRequest().authenticated()
                 );
 
