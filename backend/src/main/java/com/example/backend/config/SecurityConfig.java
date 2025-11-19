@@ -144,7 +144,7 @@ public class SecurityConfig {
 
                         // 3. USER 권한 필요
                         .requestMatchers(HttpMethod.GET, "/exhibition/my", "/user").hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/exhibition/create", "s3/upload").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/exhibition/create", "/s3/upload").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT, "/exhibition/*").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/exhibition/*").hasRole("USER")
                         // 4. 그외 모든 요청 인증 필요
