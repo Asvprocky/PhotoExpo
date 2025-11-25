@@ -7,7 +7,8 @@ public record ExhibitionResponseDTO(Long exhibitionId,
                                     String background,
                                     String layout,
                                     String fontColor,
+                                    Long exhibitionViewCount,
                                     Long userId) {
-    
+
 
 }

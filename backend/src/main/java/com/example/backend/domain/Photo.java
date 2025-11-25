@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 @Builder
 @Getter
 @Table(name = "photos")
+@EntityListeners(AuditingEntityListener.class)
 public class Photo {
 
     @Id
@@ -58,5 +60,8 @@ public class Photo {
     @OneToMany(mappedBy = "photo", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
 
+    public void increaseViewCount() {
+        this.photoViewCount = this.photoViewCount + 1;
+    }
 
 }

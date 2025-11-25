@@ -41,10 +41,9 @@ public class PhotoService {
         log.info("photoService file URLS{}", urls);
 
         // exhibition 처리 (null 가능)  한 번만 값이 할당됨
-        final Exhibition exhibition =
-                dto.getExhibitionId() == null ? null :
-                        exhibitionRepository.findById(dto.getExhibitionId())
-                                .orElseThrow(() -> new RuntimeException("Exhibition not found"));
+        final Exhibition exhibition = dto.getExhibitionId() == null ? null :
+                exhibitionRepository.findById(dto.getExhibitionId())
+                        .orElseThrow(() -> new RuntimeException("Exhibition not found"));
 
         // DB 저장
         return urls.stream()
@@ -61,4 +60,43 @@ public class PhotoService {
                 .toList();
     }
 
+    /**
+     * 사진 조회
+     * 조회수 증가
+     */
+    @Transactional
+    public Photo getPhoto(Long photoId) {
+        Photo photo = photoRepository.findById(photoId)
+                .orElseThrow(() -> new RuntimeException("Photo not found"));
+        photo.increaseViewCount();
+        return photo;
+    }
+
+    /**
+     * 내 사진 조회
+     */
+    @Transactional(readOnly = true)
+    public List<Photo> getMyPhoto(String email) {
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return photoRepository.findByUser(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Photo> getPhotoByExhibition(Long exhibitionId) {
+        return photoRepository.findByExhibition_ExhibitionId(exhibitionId);
+
+    }
+
+    /**
+     * 모든 사진 조회
+     * 조회시 인기순과 최신순
+     */
+    @Transactional(readOnly = true)
+    public List<Photo> getAllPhotos(String sort) {
+        if ("popular".equals(sort)) {
+            return photoRepository.findAllByOrderByPhotoViewCountDesc();
+        }
+        return photoRepository.findAllByOrderByCreatedAtDesc();
+    }
 }

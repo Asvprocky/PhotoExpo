@@ -47,6 +47,7 @@ public class ExhibitionService {
                 .background(dto.getBackground())
                 .layout(dto.getLayout())
                 .fontColor(dto.getFontColor())
+                .exhibitionViewCount(0L)
                 .user(user) // 사용자 연결 (연관 관계)
                 .build();
 
@@ -62,6 +63,7 @@ public class ExhibitionService {
                 saved.getBackground(),
                 saved.getLayout(),
                 saved.getFontColor(),
+                saved.getExhibitionViewCount(),
                 saved.getUser().getUserId());
     }
 
@@ -85,6 +87,7 @@ public class ExhibitionService {
                         exhibition.getBackground(),
                         exhibition.getLayout(),
                         exhibition.getFontColor(),
+                        exhibition.getExhibitionViewCount(),
                         exhibition.getUser().getUserId()
                 ))
                 .toList(); // 스트림 타입을 다시 리스트로 변환
@@ -107,6 +110,7 @@ public class ExhibitionService {
                 exhibition.getBackground(),
                 exhibition.getLayout(),
                 exhibition.getFontColor(),
+                exhibition.getExhibitionViewCount(),
                 exhibition.getUser().getUserId()
         );
     }
@@ -134,6 +138,7 @@ public class ExhibitionService {
                         exhibition.getBackground(),
                         exhibition.getLayout(),
                         exhibition.getFontColor(),
+                        exhibition.getExhibitionViewCount(),
                         exhibition.getUser().getUserId()
                 )).toList();
     }
@@ -158,6 +163,7 @@ public class ExhibitionService {
                 exhibition.getBackground(),
                 exhibition.getLayout(),
                 exhibition.getFontColor(),
+                exhibition.getExhibitionViewCount(),
                 exhibition.getUser().getUserId()
         );
     }
@@ -169,7 +175,7 @@ public class ExhibitionService {
     public void deleteExhibition(Long exhibitionId) {
         Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
                 .orElseThrow(() -> new RuntimeException("Exhibition not found"));
-        
+
         exhibitionRepository.delete(exhibition);
     }
 

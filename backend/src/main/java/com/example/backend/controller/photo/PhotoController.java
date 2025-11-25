@@ -22,6 +22,9 @@ public class PhotoController {
 
     private final PhotoService photoService;
 
+    /**
+     * 사진 업로드
+     */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<PhotoResponseDTO>> uploadPhotos(
             @RequestPart(value = "image") List<MultipartFile> files,
