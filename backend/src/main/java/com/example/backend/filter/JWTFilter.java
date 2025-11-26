@@ -21,14 +21,10 @@ import java.util.List;
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
 
-    private final List<String> publicUrls;
 
     // 변경점 AntPathMather 인스턴스 사용
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
-    public JWTFilter(List<String> publicUrls) {
-        this.publicUrls = publicUrls;
-    }
+    
 
     // 핵심 수정: permitAll 경로일 경우 이 필터 실행을 건너뛰게 함
     @Override

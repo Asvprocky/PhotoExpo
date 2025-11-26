@@ -108,20 +108,11 @@ public class SecurityConfig {
         // CORS 설정
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-
-        // 필터 무시 경로
-        List<String> allPublicUrls = List.of(
-                // GET 요청 경로
-                "/exhibition/all", "/exhibition/*", "/photo/*",
-                // POST 요청 경로
-                "/user/exist", "/user",
-                // JWT 관련 경로
-                "/jwt/exchange", "/jwt/refresh"
-        );
+        
 
         // JWTFilter Chain JWTFilter를 LogoutFilter 이전에 실행
         http
-                .addFilterBefore(new JWTFilter(allPublicUrls), LogoutFilter.class);
+                .addFilterBefore(new JWTFilter(), LogoutFilter.class);
 
         // 로그아웃 필터 , RefreshToken 삭제 핸들러
         http
