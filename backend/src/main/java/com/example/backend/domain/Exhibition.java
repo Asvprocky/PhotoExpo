@@ -10,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -54,6 +55,9 @@ public class Exhibition {
     @Column(name = "exhibition_view_count")
     private Long exhibitionViewCount;
 
+
+    @OneToMany(mappedBy = "exhibition", fetch = FetchType.LAZY)
+    private List<Photo> photos;
 
     /**
      * 수정 요청 메서드

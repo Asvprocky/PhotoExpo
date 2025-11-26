@@ -80,12 +80,7 @@ public class PhotoService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return photoRepository.findByUser(user);
     }
-
-    @Transactional(readOnly = true)
-    public List<Photo> getPhotoByExhibition(Long exhibitionId) {
-        return photoRepository.findByExhibition_ExhibitionId(exhibitionId);
-
-    }
+    
 
     /**
      * 모든 사진 조회
