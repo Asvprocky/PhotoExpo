@@ -1,16 +1,12 @@
 package com.example.backend.controller.photo;
 
-import com.example.backend.domain.Photo;
 import com.example.backend.dto.request.PhotoRequestDTO;
 import com.example.backend.dto.response.PhotoResponseDTO;
 import com.example.backend.service.photo.PhotoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,12 +26,19 @@ public class PhotoController {
             @RequestPart(value = "image") List<MultipartFile> files,
             @RequestPart(value = "dto") PhotoRequestDTO dto
     ) {
-        List<Photo> savePhotos = photoService.uploadPhoto(files, dto);
-
-        List<PhotoResponseDTO> response = savePhotos.stream()
-                .map(PhotoResponseDTO::fromEntity)
-                .toList();
+        List<PhotoResponseDTO> response = photoService.uploadPhoto(files, dto);
+        
         return ResponseEntity.status(200).body(response);
 
+    }
+
+    /**
+     * 단일 사진 조회
+     */
+    @GetMapping(value = "/{photoId}")
+    public ResponseEntity<PhotoResponseDTO> getPhoto(@PathVariable Long photoId) {
+        PhotoResponseDTO photo = photoService.getPhoto(photoId);
+
+        return ResponseEntity.status(200).body(photo);
     }
 }

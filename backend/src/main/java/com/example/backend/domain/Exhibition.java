@@ -68,5 +68,12 @@ public class Exhibition {
 
     }
 
+    /**
+     * 조회수 증가
+     */
+    public void increaseViewCount() {
+        this.exhibitionViewCount = this.exhibitionViewCount + 1;
+    }
+
 
 }

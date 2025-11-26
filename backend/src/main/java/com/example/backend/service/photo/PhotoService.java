@@ -4,6 +4,7 @@ import com.example.backend.domain.Exhibition;
 import com.example.backend.domain.Photo;
 import com.example.backend.domain.Users;
 import com.example.backend.dto.request.PhotoRequestDTO;
+import com.example.backend.dto.response.PhotoResponseDTO;
 import com.example.backend.repository.ExhibitionRepository;
 import com.example.backend.repository.PhotoRepository;
 import com.example.backend.repository.UserRepository;
@@ -28,7 +29,7 @@ public class PhotoService {
     private final UserRepository userRepository;
 
     @Transactional
-    public List<Photo> uploadPhoto(
+    public List<PhotoResponseDTO> uploadPhoto(
             List<MultipartFile> files,
             PhotoRequestDTO dto
     ) {
@@ -44,9 +45,8 @@ public class PhotoService {
         final Exhibition exhibition = dto.getExhibitionId() == null ? null :
                 exhibitionRepository.findById(dto.getExhibitionId())
                         .orElseThrow(() -> new RuntimeException("Exhibition not found"));
-
-        // DB 저장
-        return urls.stream()
+        // 1. DB 저장 (엔티티 목록)
+        List<Photo> savedPhotos = urls.stream()
                 .map(url -> Photo.builder()
                         .user(user)
                         .exhibition(exhibition)
@@ -58,6 +58,11 @@ public class PhotoService {
                         .build())
                 .map(photoRepository::save)
                 .toList();
+
+        // 2. 엔티티 목록을 DTO 목록으로 변환하여 반환 (추가된 로직)
+        return savedPhotos.stream()
+                .map(PhotoResponseDTO::fromEntity) // DTO 변환 메서드 사용
+                .toList();
     }
 
     /**
@@ -65,11 +70,22 @@ public class PhotoService {
      * 조회수 증가
      */
     @Transactional
-    public Photo getPhoto(Long photoId) {
+    public PhotoResponseDTO getPhoto(Long photoId) {
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new RuntimeException("Photo not found"));
         photo.increaseViewCount();
-        return photo;
+        return new PhotoResponseDTO(
+                photo.getPhotoId(),
+                photo.getTitle(),
+                photo.getDescription(),
+                photo.getImageUrl(),
+                photo.getPrice(),
+                photo.getCreatedAt(),
+                photo.getPhotoViewCount(),
+                photo.getUser().getUserId(),
+                photo.getExhibition().getExhibitionId()
+
+        );
     }
 
     /**

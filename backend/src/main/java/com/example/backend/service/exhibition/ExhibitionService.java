@@ -101,6 +101,7 @@ public class ExhibitionService {
     public ExhibitionResponseDTO getExhibitionById(Long exhibitionId) {
         Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
                 .orElseThrow(() -> new UsernameNotFoundException("존재 하지 않는 유저 입니다."));
+        exhibition.increaseViewCount();
 
         return new ExhibitionResponseDTO(
                 exhibition.getExhibitionId(),

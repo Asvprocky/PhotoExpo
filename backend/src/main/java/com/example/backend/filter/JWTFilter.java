@@ -5,18 +5,66 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 public class JWTFilter extends OncePerRequestFilter {
+
+    private final List<String> publicUrls;
+
+    // 변경점 AntPathMather 인스턴스 사용
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    public JWTFilter(List<String> publicUrls) {
+        this.publicUrls = publicUrls;
+    }
+
+    // 핵심 수정: permitAll 경로일 경우 이 필터 실행을 건너뛰게 함
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String requestUri = request.getRequestURI();
+        String method = request.getMethod();
+
+        // 1. GET 요청이면서, /photo/* 또는 /exhibition/* 와일드카드 패턴에 해당하는 경우
+        if (method.equals("GET")) {
+            // **GET으로만 공개된 경로**
+            if (pathMatcher.match("/exhibition/*", requestUri) ||
+                    pathMatcher.match("/photo/*", requestUri) ||
+                    pathMatcher.match("/exhibition/all", requestUri)) {
+                return true;
+            }
+        }
+
+        // 2. POST 요청이면서, 로그인/토큰 갱신 관련 경로에 해당하는 경우
+        if (method.equals("POST")) {
+            // **POST로 공개된 경로**
+            if (pathMatcher.match("/user", requestUri) ||
+                    pathMatcher.match("/user/exist", requestUri)) {
+                return true;
+            }
+        }
+
+        // 3. JWT 갱신 경로는 모든 메서드 허용일 수 있음
+        if (pathMatcher.match("/jwt/*", requestUri)) {
+            return true;
+        }
+
+        // 그 외 (인증 필요한 POST / PUT / DELETE)는 필터 실행
+        return false;
+
+    }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -31,8 +79,10 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         if (!authorization.startsWith("Bearer ")) {
-
-            throw new ServletException("인증 되지 않은 토큰"); // "Bearer " 로 시작하지 않을시 예외처리
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"error\":\"인증되지 않은 토큰\"}");
+            return;
         }
 
         // 토큰 파싱
