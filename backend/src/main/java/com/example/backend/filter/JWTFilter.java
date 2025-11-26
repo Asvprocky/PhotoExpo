@@ -19,12 +19,16 @@ import java.util.Collections;
 import java.util.List;
 
 @Slf4j
+
 public class JWTFilter extends OncePerRequestFilter {
 
-
     // 변경점 AntPathMather 인스턴스 사용
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
-    
+    private final AntPathMatcher pathMatcher;
+
+    public JWTFilter() {
+        this.pathMatcher = new AntPathMatcher();
+    }
+
 
     // 핵심 수정: permitAll 경로일 경우 이 필터 실행을 건너뛰게 함
     @Override
@@ -32,12 +36,15 @@ public class JWTFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
+        log.warn("요청 URI: {} (Method: {})", requestUri, method);
+
         // 1. GET 요청이면서, /photo/* 또는 /exhibition/* 와일드카드 패턴에 해당하는 경우
         if (method.equals("GET")) {
             // **GET으로만 공개된 경로**
             if (pathMatcher.match("/exhibition/*", requestUri) ||
                     pathMatcher.match("/photo/*", requestUri) ||
                     pathMatcher.match("/exhibition/all", requestUri)) {
+                log.warn("✅ Public Match Success! Filter SKIP.");
                 return true;
             }
         }
@@ -57,6 +64,7 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         // 그 외 (인증 필요한 POST / PUT / DELETE)는 필터 실행
+        log.warn("❌ Public Match Failed! Filter PROCEED.");
         return false;
 
     }

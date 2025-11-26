@@ -47,15 +47,7 @@ public class PhotoService {
                         .orElseThrow(() -> new RuntimeException("Exhibition not found"));
         // 1. DB 저장 (엔티티 목록)
         List<Photo> savedPhotos = urls.stream()
-                .map(url -> Photo.builder()
-                        .user(user)
-                        .exhibition(exhibition)
-                        .title(dto.getTitle())
-                        .description(dto.getDescription())
-                        .price(dto.getPrice())
-                        .imageUrl(url)
-                        .photoViewCount(0L)
-                        .build())
+                .map(url -> dto.toEntity(user, exhibition, url))
                 .map(photoRepository::save)
                 .toList();
 
@@ -74,18 +66,9 @@ public class PhotoService {
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new RuntimeException("Photo not found"));
         photo.increaseViewCount();
-        return new PhotoResponseDTO(
-                photo.getPhotoId(),
-                photo.getTitle(),
-                photo.getDescription(),
-                photo.getImageUrl(),
-                photo.getPrice(),
-                photo.getCreatedAt(),
-                photo.getPhotoViewCount(),
-                photo.getUser().getUserId(),
-                photo.getExhibition().getExhibitionId()
 
-        );
+        return PhotoResponseDTO.fromEntity(photo);
+
     }
 
     /**
