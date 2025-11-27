@@ -61,6 +61,7 @@ public class JWTFilter extends OncePerRequestFilter {
         if (method.equals("POST")) {
             // **POST로 공개된 경로**
             if (pathMatcher.match("/user", requestUri) ||
+                    pathMatcher.match("/user/join", requestUri) ||
                     pathMatcher.match("/user/exist", requestUri)) {
                 return true;
             }
@@ -116,7 +117,7 @@ public class JWTFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"error\":\"인증되지 않은 토큰\"}");
-            
+
         }
     }
 }

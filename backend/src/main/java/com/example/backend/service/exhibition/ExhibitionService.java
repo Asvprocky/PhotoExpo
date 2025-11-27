@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Slf4j
@@ -87,7 +88,7 @@ public class ExhibitionService {
     @Transactional(readOnly = true)
     public List<ExhibitionResponseDTO> getMyExhibition() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        
+
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -102,10 +103,17 @@ public class ExhibitionService {
      * 전시 수정
      */
     @Transactional
-    public ExhibitionResponseDTO updateExhibition(Long exhibitionId, ExhibitionRequestDTO dto) {
+    public ExhibitionResponseDTO updateExhibition(Long exhibitionId, ExhibitionRequestDTO dto) throws AccessDeniedException {
+
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
         Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
                 .orElseThrow(() -> new RuntimeException("Exhibition not found"));
         log.info("Exhibition Service, updateExhibition - exhibition : {}", exhibition);
+
+        if (!exhibition.getUser().getEmail().equals(currentUserEmail)) {
+            throw new AccessDeniedException("소유자만 수정 할 수 있습니다.");
+        }
 
         // 수정할 필드들만 업데이트
         exhibition.updateExhibition(dto);
@@ -118,9 +126,14 @@ public class ExhibitionService {
      * 자신 전시회 삭제
      */
     @Transactional
-    public void deleteExhibition(Long exhibitionId) {
+    public void deleteExhibition(Long exhibitionId) throws AccessDeniedException {
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
                 .orElseThrow(() -> new RuntimeException("Exhibition not found"));
+
+        if (!exhibition.getUser().getEmail().equals(currentUserEmail)) {
+            throw new AccessDeniedException("소유자만 삭제 할 수 있습니다.");
+        }
 
         exhibitionRepository.delete(exhibition);
     }

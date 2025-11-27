@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -68,7 +69,7 @@ public class ExhibitionController {
     @PutMapping(value = "/{exhibitionId}", consumes = "application/json")
     public ResponseEntity<ExhibitionResponseDTO> updateExhibition(
             @PathVariable Long exhibitionId,
-            @RequestBody ExhibitionRequestDTO dto) {
+            @RequestBody ExhibitionRequestDTO dto) throws AccessDeniedException {
 
         ExhibitionResponseDTO exhibition = exhibitionService.updateExhibition(exhibitionId, dto);
         return ResponseEntity.status(200).body(exhibition);
@@ -78,7 +79,7 @@ public class ExhibitionController {
      * 자신 전시회 삭제
      */
     @DeleteMapping(value = "/{exhibitionId}")
-    public ResponseEntity<Void> deleteExhibition(@PathVariable Long exhibitionId) {
+    public ResponseEntity<Void> deleteExhibition(@PathVariable Long exhibitionId) throws AccessDeniedException {
         exhibitionService.deleteExhibition(exhibitionId);
         return ResponseEntity.status(204).build();
 

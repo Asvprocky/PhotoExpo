@@ -140,7 +140,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/exhibition/all", "/exhibition/*", "/photo/*").permitAll()
 
                         // 2. 회원가입 등 공개
-                        .requestMatchers(HttpMethod.POST, "/user/exist", "/user").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/user/exist", "/user/join").permitAll()
                         .requestMatchers("/jwt/exchange", "/jwt/refresh").permitAll()
 
                         // 3. USER 권한 필요
