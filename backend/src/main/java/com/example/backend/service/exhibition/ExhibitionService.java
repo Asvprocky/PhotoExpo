@@ -87,6 +87,7 @@ public class ExhibitionService {
     @Transactional(readOnly = true)
     public List<ExhibitionResponseDTO> getMyExhibition() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

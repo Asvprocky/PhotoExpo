@@ -75,22 +75,33 @@ public class PhotoService {
      * 내 사진 조회
      */
     @Transactional(readOnly = true)
-    public List<Photo> getMyPhoto(String email) {
+    public List<PhotoResponseDTO> getMyPhoto() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return photoRepository.findByUser(user);
+        List<Photo> photos = photoRepository.findByUser(user);
+
+        return photos.stream()
+                .map(PhotoResponseDTO::fromEntity)
+                .toList();
     }
-    
+
 
     /**
      * 모든 사진 조회
      * 조회시 인기순과 최신순
      */
     @Transactional(readOnly = true)
-    public List<Photo> getAllPhotos(String sort) {
+    public List<PhotoResponseDTO> getAllPhotos(String sort) {
+        List<Photo> photos;
+
         if ("popular".equals(sort)) {
-            return photoRepository.findAllByOrderByPhotoViewCountDesc();
+            photos = photoRepository.findAllByOrderByPhotoViewCountDesc();
+        } else {
+            photos = photoRepository.findAllByOrderByCreatedAtDesc();
         }
-        return photoRepository.findAllByOrderByCreatedAtDesc();
+        return photos.stream()
+                .map(PhotoResponseDTO::fromEntity)
+                .toList();
     }
 }

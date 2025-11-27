@@ -38,6 +38,14 @@ public class JWTFilter extends OncePerRequestFilter {
 
         log.warn("요청 URI: {} (Method: {})", requestUri, method);
 
+        // 💡 1단계: 인증이 필요한 예외 경로를 먼저 검사합니다.
+        // 이 경로는 JWTFilter를 실행(false)하여 토큰 검사를 받도록 합니다.
+        if (method.equals("GET") && pathMatcher.match("/photo/my", requestUri) ||
+                pathMatcher.match("/exhibition/my", requestUri)
+        ) {
+            log.warn("❌ PROCEED: /photo/my requires authentication.");
+            return false;
+        }
         // 1. GET 요청이면서, /photo/* 또는 /exhibition/* 와일드카드 패턴에 해당하는 경우
         if (method.equals("GET")) {
             // **GET으로만 공개된 경로**
@@ -75,6 +83,7 @@ public class JWTFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws IOException, ServletException {
 
+
         String authorization = request.getHeader("Authorization");
         if (authorization == null) {
 
@@ -107,6 +116,7 @@ public class JWTFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"error\":\"인증되지 않은 토큰\"}");
+            
         }
     }
 }

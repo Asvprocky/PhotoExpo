@@ -27,7 +27,7 @@ public class PhotoController {
             @RequestPart(value = "dto") PhotoRequestDTO dto
     ) {
         List<PhotoResponseDTO> response = photoService.uploadPhoto(files, dto);
-        
+
         return ResponseEntity.status(200).body(response);
 
     }
@@ -40,5 +40,26 @@ public class PhotoController {
         PhotoResponseDTO photo = photoService.getPhoto(photoId);
 
         return ResponseEntity.status(200).body(photo);
+    }
+
+    /**
+     * 내 사진 조회
+     */
+    @GetMapping(value = "/my")
+    public ResponseEntity<List<PhotoResponseDTO>> getMyPhotos() {
+        List<PhotoResponseDTO> photos = photoService.getMyPhoto();
+        return ResponseEntity.status(200).body(photos);
+    }
+
+    /**
+     * 전체 사진 조회
+     */
+    @GetMapping(value = "/all")
+    public ResponseEntity<List<PhotoResponseDTO>> getAllPhotos(
+            @RequestParam(defaultValue = "newest") String sort
+    ) {
+        List<PhotoResponseDTO> photos = photoService.getAllPhotos(sort);
+        return ResponseEntity.status(200).body(photos);
+
     }
 }

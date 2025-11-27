@@ -31,6 +31,8 @@ public class ExhibitionController {
 
     /**
      * 모든 전시회 조회
+     * 조회시 모든 사진도 다 보임
+     * 이건 프론트단에서 첫번째 사진만 썸네일 처럼 가져와서 보이게 구현
      */
     @GetMapping(value = "/all")
     public ResponseEntity<List<ExhibitionResponseDTO>> getAllExhibition() {

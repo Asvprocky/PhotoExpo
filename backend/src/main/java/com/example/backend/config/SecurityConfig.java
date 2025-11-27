@@ -108,7 +108,7 @@ public class SecurityConfig {
         // CORS 설정
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
-        
+
 
         // JWTFilter Chain JWTFilter를 LogoutFilter 이전에 실행
         http
@@ -144,7 +144,7 @@ public class SecurityConfig {
                         .requestMatchers("/jwt/exchange", "/jwt/refresh").permitAll()
 
                         // 3. USER 권한 필요
-                        .requestMatchers(HttpMethod.GET, "/exhibition/my", "/user").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/exhibition/my", "/user", "/user/info", "/photo/my").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/exhibition/create", "/s3/upload", "/photo/upload").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT, "/exhibition/*").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/exhibition/*").hasRole("USER")
