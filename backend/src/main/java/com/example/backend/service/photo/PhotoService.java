@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Slf4j
@@ -37,14 +38,17 @@ public class PhotoService {
         log.info("photoService email : {}", email);
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        // S3 업로드 후  Url 반환
-        List<String> urls = s3Service.upload(files);
-        log.info("photoService file URLS{}", urls);
 
         // exhibition 처리 (null 가능)  한 번만 값이 할당됨
         final Exhibition exhibition = dto.getExhibitionId() == null ? null :
                 exhibitionRepository.findById(dto.getExhibitionId())
                         .orElseThrow(() -> new RuntimeException("Exhibition not found"));
+        
+        // S3 업로드 후  Url 반환
+        List<String> urls = s3Service.upload(files);
+        log.info("photoService file URLS{}", urls);
+
+
         // 1. DB 저장 (엔티티 목록)
         List<Photo> savedPhotos = urls.stream()
                 .map(url -> dto.toEntity(user, exhibition, url))
@@ -103,5 +107,23 @@ public class PhotoService {
         return photos.stream()
                 .map(PhotoResponseDTO::fromEntity)
                 .toList();
+    }
+
+    /**
+     * 자신 사진 삭제
+     */
+    @Transactional
+    public void deletePhoto(Long photoId) throws AccessDeniedException {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Photo photo = photoRepository.findById(photoId)
+                .orElseThrow(() -> new RuntimeException("Photo not found"));
+        if (!currentEmail.equals(photo.getUser().getEmail())) {
+            throw new AccessDeniedException("소유자만 삭제 할 수 있습니다.");
+
+        }
+        photoRepository.delete(photo);
+
+
     }
 }

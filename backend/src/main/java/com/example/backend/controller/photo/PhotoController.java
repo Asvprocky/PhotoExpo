@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -62,4 +63,12 @@ public class PhotoController {
         return ResponseEntity.status(200).body(photos);
 
     }
+
+
+    @DeleteMapping(value = "/{photoId}")
+    public ResponseEntity<Void> deletePhoto(@PathVariable Long photoId) throws AccessDeniedException {
+        photoService.deletePhoto(photoId);
+        return ResponseEntity.status(204).build();
+    }
+
 }
