@@ -64,7 +64,22 @@ public class PhotoController {
 
     }
 
+    /**
+     * 자신 사진 수정
+     */
+    @PutMapping(value = "/{photoId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PhotoResponseDTO> updatePhoto(
+            @PathVariable Long photoId,
+            @RequestBody PhotoRequestDTO dto) throws AccessDeniedException {
 
+        PhotoResponseDTO photoResponseDTO = photoService.updatePhoto(photoId, dto);
+        return ResponseEntity.status(200).body(photoResponseDTO);
+    }
+
+
+    /**
+     * 자신 사진 삭제
+     */
     @DeleteMapping(value = "/{photoId}")
     public ResponseEntity<Void> deletePhoto(@PathVariable Long photoId) throws AccessDeniedException {
         photoService.deletePhoto(photoId);

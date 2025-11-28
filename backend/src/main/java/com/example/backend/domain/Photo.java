@@ -1,5 +1,6 @@
 package com.example.backend.domain;
 
+import com.example.backend.dto.request.PhotoRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,6 +60,15 @@ public class Photo {
 
     @OneToMany(mappedBy = "photo", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
+
+    /**
+     * 사진 수정
+     */
+    public void updatePhoto(PhotoRequestDTO dto) {
+        this.title = dto.getTitle();
+        this.description = dto.getDescription();
+        this.price = dto.getPrice();
+    }
 
     public void increaseViewCount() {
         this.photoViewCount = this.photoViewCount + 1;

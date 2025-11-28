@@ -43,7 +43,7 @@ public class PhotoService {
         final Exhibition exhibition = dto.getExhibitionId() == null ? null :
                 exhibitionRepository.findById(dto.getExhibitionId())
                         .orElseThrow(() -> new RuntimeException("Exhibition not found"));
-        
+
         // S3 업로드 후  Url 반환
         List<String> urls = s3Service.upload(files);
         log.info("photoService file URLS{}", urls);
@@ -110,6 +110,26 @@ public class PhotoService {
     }
 
     /**
+     * 자신 사진 수정
+     */
+    @Transactional
+    public PhotoResponseDTO updatePhoto(Long photoId, PhotoRequestDTO dto) throws AccessDeniedException {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Photo photo = photoRepository.findById(photoId)
+                .orElseThrow(() -> new RuntimeException("Photo not found"));
+
+
+        if (!photo.getUser().getEmail().equals(currentEmail)) {
+            throw new AccessDeniedException("소유자만 수정 할 수 있습니다");
+        }
+        photo.updatePhoto(dto);
+        
+        // 2. DB에 변경사항 자동 반영 (Dirty Checking)
+        return PhotoResponseDTO.fromEntity(photoRepository.save(photo));
+    }
+
+    /**
      * 자신 사진 삭제
      */
     @Transactional
@@ -123,7 +143,6 @@ public class PhotoService {
 
         }
         photoRepository.delete(photo);
-
 
     }
 }
