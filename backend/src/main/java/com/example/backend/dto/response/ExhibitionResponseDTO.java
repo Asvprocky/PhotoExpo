@@ -13,6 +13,7 @@ public record ExhibitionResponseDTO(Long exhibitionId,
                                     String template,
                                     String background,
                                     String layout,
+                                    String font,
                                     String fontColor,
                                     Long exhibitionViewCount,
                                     LocalDateTime createdAt,
@@ -22,7 +23,7 @@ public record ExhibitionResponseDTO(Long exhibitionId,
 
     public static ExhibitionResponseDTO fromEntity(Exhibition exhibition) {
 
-        // 💡 Photo 목록을 PhotoResponseDTO 목록으로 변환하여 매핑
+        // Photo 목록을 PhotoResponseDTO 목록으로 변환하여 매핑
         List<PhotoResponseDTO> photoDtos =
                 exhibition.getPhotos() == null
                         ? List.of()
@@ -37,6 +38,7 @@ public record ExhibitionResponseDTO(Long exhibitionId,
                 exhibition.getTemplate(),
                 exhibition.getBackground(),
                 exhibition.getLayout(),
+                exhibition.getFont(),
                 exhibition.getFontColor(),
                 exhibition.getExhibitionViewCount(),
                 exhibition.getCreatedAt(),

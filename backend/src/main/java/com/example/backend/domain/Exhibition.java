@@ -45,6 +45,9 @@ public class Exhibition {
     @Column(name = "layout")
     private String layout;
 
+    @Column(name = "font")
+    private String font;
+
     @Column(name = "font_color")
     private String fontColor;
 

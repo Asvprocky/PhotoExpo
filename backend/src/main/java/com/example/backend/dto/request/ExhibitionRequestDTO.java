@@ -19,13 +19,12 @@ public class ExhibitionRequestDTO {
     @NotBlank
     private String template;
 
-    @NotBlank
     private String background;
 
-    @NotBlank
     private String layout;
 
-    @NotBlank
+    private String font;
+
     private String fontColor;
 
     public Exhibition toEntity(Users user) {
@@ -35,6 +34,7 @@ public class ExhibitionRequestDTO {
                 .template(this.template)
                 .background(this.background)
                 .layout(this.layout)
+                .font(this.font)
                 .fontColor(this.fontColor)
                 .exhibitionViewCount(0L) // 기본값은 DTO가 책임
                 .user(user) // 서비스에서 받은 유저 엔티티를 주입

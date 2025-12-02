@@ -1,0 +1,9 @@
+{
+  "name": "template1",
+  "displayName": "Classic",
+  "thumbnail": "/images/templates/template1_thumb.png",
+  "layout": "grid",
+  "font": "Noto Sans",
+  "fontColor": "#000000",
+  "background": "#FFFFFF"
+}

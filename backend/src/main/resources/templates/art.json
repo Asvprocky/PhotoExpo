@@ -1,0 +1,9 @@
+{
+  "name": "template2",
+  "displayName": "Art",
+  "thumbnail": "/images/templates/template2_thumb.png",
+  "layout": "masonry",
+  "font": "Playfair Display",
+  "fontColor": "#333333",
+  "background": "#F9F9F9"
+}
