@@ -37,10 +37,15 @@ public class Orders {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "total_price")
+    private Long totalPrice;
 
     // 관계 매핑
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItems> orderItems;
 
 
+    public void setTotalPrice(long totalOrderPrice) {
+        this.totalPrice = totalOrderPrice;
+    }
 }
