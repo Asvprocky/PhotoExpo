@@ -144,7 +144,7 @@ public class SecurityConfig {
                         .requestMatchers("/jwt/exchange", "/jwt/refresh").permitAll()
 
                         // 3. USER 권한 필요
-                        .requestMatchers(HttpMethod.GET, "/exhibition/my", "/user", "/user/info", "/photo/my", "/templates").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/exhibition/my", "/user", "/user/info", "/photo/my", "/templates", "/order/create").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/exhibition/create", "/s3/upload", "/photo/upload", "/photo/*/like/**").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT, "/exhibition/*").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/exhibition/*", "/photo/*").hasRole("USER")

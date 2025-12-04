@@ -1,0 +1,9 @@
+{
+  "name": "templateDefault",
+  "displayName": "Default",
+  "thumbnail": "/images/templates/template3_thumb.png",
+  "layout": "cool",
+  "font": "create soho",
+  "fontColor": "#000000",
+  "background": "#F1F1F1F1"
+}

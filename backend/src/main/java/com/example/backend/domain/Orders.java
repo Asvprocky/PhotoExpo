@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 @Builder
 @Getter
 @Table(name = "orders")
+@EntityListeners(AuditingEntityListener.class)
 public class Orders {
 
     @Id
@@ -37,6 +39,8 @@ public class Orders {
 
 
     // 관계 매핑
-    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItem;
+    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItems> orderItems;
+
+
 }

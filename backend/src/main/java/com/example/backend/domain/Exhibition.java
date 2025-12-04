@@ -60,8 +60,8 @@ public class Exhibition {
 
 
     @OneToMany(mappedBy = "exhibition",
-            cascade = CascadeType.ALL,  // 💡 연관된 작업(삭제 포함)을 전파
-            orphanRemoval = true,       // 💡 부모와의 연관이 끊기면 자식도 삭제
+            cascade = CascadeType.ALL,  // 연관된 작업(삭제 포함)을 전파
+            orphanRemoval = true,       // 부모와의 연관이 끊기면 자식도 삭제
             fetch = FetchType.LAZY)
     private List<Photo> photos;
 

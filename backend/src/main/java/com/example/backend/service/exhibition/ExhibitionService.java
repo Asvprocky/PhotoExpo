@@ -4,8 +4,10 @@ import com.example.backend.domain.Exhibition;
 import com.example.backend.domain.Users;
 import com.example.backend.dto.request.ExhibitionRequestDTO;
 import com.example.backend.dto.response.ExhibitionResponseDTO;
+import com.example.backend.dto.response.TemplateResponseDTO;
 import com.example.backend.repository.ExhibitionRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.service.template.TemplateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +24,7 @@ import java.util.List;
 public class ExhibitionService {
     private final ExhibitionRepository exhibitionRepository;
     private final UserRepository userRepository;
+    private final TemplateService templateService;
 
 
     /**
@@ -40,9 +43,12 @@ public class ExhibitionService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         log.info("Exhibition Service, createExhibition - user : {}", user);
 
+        // 선택한 template 이름으로 JSON 불러오기
+        TemplateResponseDTO templateDetails = templateService.getTemplateDetails(dto.getTemplate());
+
         // dto.toEntity()를 호출하고, 필수 인자인 user 객체를 전달
         // 변수가 이미 메서드의 인자(parameter)로 선언되어 바로 사용 할 수 있음
-        Exhibition exhibition = dto.toEntity(user);
+        Exhibition exhibition = dto.toEntity(user, templateDetails);
 
         // DB 에 저장과 동시에 DB에서 생성된 값을 채워서 반환
         Exhibition saved = exhibitionRepository.save(exhibition);

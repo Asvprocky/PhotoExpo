@@ -20,7 +20,7 @@ public class TemplateController {
     @GetMapping("/templates")
     public ResponseEntity<List<TemplateResponseDTO>> getTemplates() {
         // 예시: 템플릿 이름 목록
-        List<String> templateNames = List.of("classic", "art");
+        List<String> templateNames = List.of("default", "classic", "art");
 
         // 각 이름으로 TemplateResponseDTO 생성
         List<TemplateResponseDTO> templates = templateNames.stream()

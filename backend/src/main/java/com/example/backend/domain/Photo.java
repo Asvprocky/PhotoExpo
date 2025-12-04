@@ -59,7 +59,7 @@ public class Photo {
     private List<PhotoLikes> likes;
 
     @OneToMany(mappedBy = "photo", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItems;
+    private List<OrderItems> orderItems;
 
     /**
      * 사진 수정
