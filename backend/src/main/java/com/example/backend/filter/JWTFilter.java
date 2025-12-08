@@ -38,7 +38,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         log.warn("요청 URI: {} (Method: {})", requestUri, method);
 
-        // 💡 1단계: 인증이 필요한 예외 경로를 먼저 검사합니다.
+        // 1단계: 인증이 필요한 예외 경로를 먼저 검사합니다.
         // 이 경로는 JWTFilter를 실행(false)하여 토큰 검사를 받도록 합니다.
         if (method.equals("GET") && pathMatcher.match("/photo/my", requestUri) ||
                 pathMatcher.match("/exhibition/my", requestUri)

@@ -16,6 +16,9 @@ public class PhotoLikesController {
 
     private final PhotoLikesService photoLikesService;
 
+    /**
+     * 사진 좋아요 토글
+     */
     @PostMapping("/toggle")
     public ResponseEntity<PhotoLikesResponseDTO> togglePhotoLike(@PathVariable Long photoId) {
         PhotoLikesResponseDTO likes = photoLikesService.toggleLike(photoId);

@@ -3,6 +3,7 @@ package com.example.backend.service.order;
 import com.example.backend.domain.*;
 import com.example.backend.dto.request.OrderItemsRequestDTO;
 import com.example.backend.dto.request.OrderRequestDTO;
+import com.example.backend.dto.response.OrderListResponseDTO;
 import com.example.backend.dto.response.OrderResponseDTO;
 import com.example.backend.repository.OrderRepository;
 import com.example.backend.repository.PhotoRepository;
@@ -30,8 +31,6 @@ public class OrderService {
 
     /**
      * 사진 주문 메서드
-     *
-     * @param dto
      */
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO dto) {
@@ -96,10 +95,10 @@ public class OrderService {
     }
 
     /**
-     * 내 주문 조회
+     * 내 모든 주문 조회
      */
     @Transactional(readOnly = true)
-    public List<OrderResponseDTO> getMyOrders() {
+    public List<OrderListResponseDTO> getMyOrders() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -109,11 +108,27 @@ public class OrderService {
         // ordersEntity -> OrderResponseDTO 로 사용자에게 필요한 값으로 변환
 
         return orders.stream()
-                .map(OrderResponseDTO::fromEntity)
+                .map(OrderListResponseDTO::fromEntity)
                 .toList();
-
-
     }
+
+    /**
+     * 내 단일 주문 조회
+     */
+    @Transactional(readOnly = true)
+    public OrderResponseDTO getOrderDetails(Long orderId) {
+
+        Orders order = orderRepository.findOrderDetailsWithItems(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문 입니다"));
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (!Objects.equals(order.getUser().getEmail(), email)) {
+            throw new SecurityException("조회 권한이 없습니다.");
+        }
+        return OrderResponseDTO.fromEntity(order);
+    }
+
 
     /**
      * 주문 취소
