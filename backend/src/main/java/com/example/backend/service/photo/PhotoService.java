@@ -29,6 +29,13 @@ public class PhotoService {
     private final ExhibitionRepository exhibitionRepository;
     private final UserRepository userRepository;
 
+    /**
+     * 사진 업로드
+     *
+     * @param files
+     * @param dto
+     * @return
+     */
     @Transactional
     public List<PhotoResponseDTO> uploadPhoto(
             List<MultipartFile> files,
@@ -85,6 +92,7 @@ public class PhotoService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         List<Photo> photos = photoRepository.findByUser(user);
 
+        // photosEntity -> PhotoResponseDTO 로 사용자에게 필요한 값으로 변환
         return photos.stream()
                 .map(PhotoResponseDTO::fromEntity)
                 .toList();
@@ -124,7 +132,7 @@ public class PhotoService {
             throw new AccessDeniedException("소유자만 수정 할 수 있습니다");
         }
         photo.updatePhoto(dto);
-        
+
         // 2. DB에 변경사항 자동 반영 (Dirty Checking)
         return PhotoResponseDTO.fromEntity(photoRepository.save(photo));
     }

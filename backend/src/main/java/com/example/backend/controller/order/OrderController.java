@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -20,6 +22,13 @@ public class OrderController {
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO dto) {
         OrderResponseDTO response = orderService.createOrder(dto);
         return ResponseEntity.status(200).body(response);
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<OrderResponseDTO>> getMyOrder() {
+        List<OrderResponseDTO> orders = orderService.getMyOrders();
+        return ResponseEntity.status(200).body(orders);
+
     }
 
     @DeleteMapping("/{orderId}")

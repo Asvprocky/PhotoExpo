@@ -96,6 +96,26 @@ public class OrderService {
     }
 
     /**
+     * 내 주문 조회
+     */
+    @Transactional(readOnly = true)
+    public List<OrderResponseDTO> getMyOrders() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Orders> orders = orderRepository.findAllByUser(user);
+
+        // ordersEntity -> OrderResponseDTO 로 사용자에게 필요한 값으로 변환
+
+        return orders.stream()
+                .map(OrderResponseDTO::fromEntity)
+                .toList();
+
+
+    }
+
+    /**
      * 주문 취소
      */
     @Transactional
