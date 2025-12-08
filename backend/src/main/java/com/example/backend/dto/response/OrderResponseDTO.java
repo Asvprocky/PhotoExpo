@@ -9,6 +9,7 @@ public record OrderResponseDTO(
         Long orderId,
         Long userId,
         String orderStatus,
+        Long totalPrice,
         LocalDateTime createdAt,
         List<OrderItemsResponseDTO> items) {
 
@@ -21,8 +22,10 @@ public record OrderResponseDTO(
                 order.getOrderId(),
                 order.getUser().getUserId(),
                 order.getOrderStatus().name(),
+                order.getTotalPrice(),
                 order.getCreatedAt(),
                 itemsDTO
+
         );
     }
 }

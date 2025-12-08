@@ -8,6 +8,7 @@ import com.example.backend.repository.OrderRepository;
 import com.example.backend.repository.PhotoRepository;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,16 +16,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final UserRepository userRepository;
     private final PhotoRepository photoRepository;
     private final OrderRepository orderRepository;
 
+    /**
+     * 사진 주문 메서드
+     *
+     * @param dto
+     */
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO dto) {
 
@@ -49,13 +57,14 @@ public class OrderService {
         Orders order = Orders.builder()
                 .user(user)
                 .orderStatus(OrderStatus.PENDING)
-                .orderItems(new ArrayList<>()) // 빈 리스트 초기화
+                .orderItems(new ArrayList<>()) // 빈 리스트 초기화 NPE 주의
                 .build();
 
         long totalOrderPrice = 0L; // 총 금액 계산용
 
-        // 5. 주문 아이템 생성 및 연결
+        // 5. 주문 아이템 하나씩 생성 및 연결
         for (OrderItemsRequestDTO itemDTO : dto.getItems()) {
+            // photoId를 Key로 사용하여 Map에 저장된 Photo 객체 전체를 가져옴
             Photo photo = photoMap.get(itemDTO.getPhotoId());
 
             if (photo == null) {
@@ -64,13 +73,13 @@ public class OrderService {
 
             // 주문 아이템 생성 (가격은 DB의 Photo 가격 사용 -> 보안 강화)
             OrderItems orderItem = OrderItems.builder()
-                    .orders(order)
+                    .orders(order) // 연관간계 설정 1
                     .photo(photo)
                     .quantity(itemDTO.getQuantity())
                     .price(photo.getPrice())
                     .build();
 
-            // 연관관계 설정
+            // 연관관계 설정 2, order에 orderItem 넣어주기
             order.getOrderItems().add(orderItem);
 
             // 총액 누적
@@ -84,5 +93,38 @@ public class OrderService {
         orderRepository.save(order);
 
         return OrderResponseDTO.fromEntity(order);
+    }
+
+    /**
+     * 주문 취소
+     */
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        // 1. 주문 엔티티 조회
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        // 2. 현재 로그인 유저 및 권한 검증
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("email : {}", email);
+
+        // 현재 주문의 소유자 이메일과 로그인 유저의 이메일이 일치하는지 확인
+        if (!Objects.equals(order.getUser().getEmail(), email)) {
+            throw new SecurityException("주문 취소 권한이 없습니다");
+
+        }
+
+        // 3. 비즈니스 상태 검증 (취소 가능 여부 체크)
+        // 주문 상태가 'PENDING'일 때만 취소 가능하다고 가정.
+        if (order.getOrderStatus() != OrderStatus.PENDING) {
+            String status = order.getOrderStatus().name();
+            throw new IllegalArgumentException("이미 처리된 주문입니다" + status);
+        }
+
+        // 4. 주문 상태 변경 및 저장
+        order.cancel();
+        orderRepository.save(order);
+
+
     }
 }

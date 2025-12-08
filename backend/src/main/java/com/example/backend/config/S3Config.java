@@ -1,6 +1,5 @@
 package com.example.backend.config;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,13 +20,13 @@ public class S3Config {
     @Value("${cloud.aws.region.static}")
     private String region;
 
-    @PostConstruct
-    public void check() {
-        System.out.println("s3");
-        System.out.println("ACCESS_KEY = " + accessKey);
-        System.out.println("SECRET_KEY = " + secretKey);
-        System.out.println("REGION = " + region);
-    }
+//    @PostConstruct
+//    public void check() {
+//        System.out.println("s3 config");
+//        System.out.println("ACCESS_KEY = " + accessKey);
+//        System.out.println("SECRET_KEY = " + secretKey);
+//        System.out.println("REGION = " + region);
+//    }
 
     @Bean
     public S3Client s3Client() {

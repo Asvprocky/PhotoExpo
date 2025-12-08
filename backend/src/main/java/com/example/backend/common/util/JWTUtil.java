@@ -19,7 +19,7 @@ public class JWTUtil {
         String secretKeyString = "qweasdfdqwrqgfdsawefvdkfkewkerkr";
         secretKey = new SecretKeySpec(secretKeyString.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
 
-        accessTokenExpire = 3600L * 1000; // 1시간
+        accessTokenExpire = 10800L * 1000; // 3시간
         refreshTokenExpire = 604800L * 1000; // 7일
 
     }

@@ -44,6 +44,9 @@ public class Orders {
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItems> orderItems;
 
+    public void cancel() {
+        this.orderStatus = OrderStatus.CANCELED;
+    }
 
     public void setTotalPrice(long totalOrderPrice) {
         this.totalPrice = totalOrderPrice;
