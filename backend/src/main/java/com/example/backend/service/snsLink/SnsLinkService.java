@@ -11,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class SnsLinkService {
@@ -18,6 +20,9 @@ public class SnsLinkService {
     private final UserRepository userRepository;
     private final SnsLinkRepository snsLinkRepository;
 
+    /**
+     * SnsLink 생성 메서드
+     */
     @Transactional
     public SnsLinkResponseDTO createSnsLink(SnsLinkRequestDTO dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -26,6 +31,28 @@ public class SnsLinkService {
 
         SnsLinks snsLinks = dto.toEntity(user);
 
+        snsLinkRepository.save(snsLinks);
+
+        return SnsLinkResponseDTO.fromEntity(snsLinks);
+
+    }
+
+    /**
+     * 링크 수정 메서드
+     */
+
+    @Transactional
+    public SnsLinkResponseDTO updateSnsLink(Long snsLinkId, SnsLinkRequestDTO dto) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        SnsLinks snsLinks = snsLinkRepository.findById(snsLinkId)
+                .orElseThrow(() -> new RuntimeException("SnsLink not found"));
+
+        if (!Objects.equals(snsLinks.getUser().getEmail(), email)) {
+            throw new SecurityException("본인만 수정 할 수 있습니다");
+        }
+        snsLinks.updateLink(dto);
+        
         snsLinkRepository.save(snsLinks);
 
         return SnsLinkResponseDTO.fromEntity(snsLinks);

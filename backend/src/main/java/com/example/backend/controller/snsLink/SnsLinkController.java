@@ -5,10 +5,7 @@ import com.example.backend.dto.response.SnsLinkResponseDTO;
 import com.example.backend.service.snsLink.SnsLinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/snsLink")
@@ -22,5 +19,14 @@ public class SnsLinkController {
         SnsLinkResponseDTO snsLinkResponseDTO = snsLinkService.createSnsLink(dto);
         return ResponseEntity.status(200).body(snsLinkResponseDTO);
 
+    }
+
+    @PutMapping("/{snsLink}")
+    public ResponseEntity<SnsLinkResponseDTO> snsLinkUpdate(
+            @PathVariable Long snsLink,
+            @RequestBody SnsLinkRequestDTO dto
+    ) {
+        SnsLinkResponseDTO snsLinkResponseDTO = snsLinkService.updateSnsLink(snsLink, dto);
+        return ResponseEntity.status(200).body(snsLinkResponseDTO);
     }
 }

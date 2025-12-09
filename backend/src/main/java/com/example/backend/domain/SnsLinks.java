@@ -1,5 +1,6 @@
 package com.example.backend.domain;
 
+import com.example.backend.dto.request.SnsLinkRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,4 +30,9 @@ public class SnsLinks {
 
     @Column(name = "sns_url")
     private String snsUrl;
+
+    public void updateLink(SnsLinkRequestDTO dto) {
+        this.snsUrl = dto.getSnsUrl();
+        this.platform = dto.getPlatform();
+    }
 }
