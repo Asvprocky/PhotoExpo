@@ -23,8 +23,9 @@ public class SnsLinks {
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "platform")
-    private String platform;
+    private SnsLinkPlatform platform;
 
     @Column(name = "sns_url")
     private String snsUrl;

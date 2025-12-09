@@ -29,7 +29,7 @@ public class OrderController {
     }
 
     /**
-     * 내 주문 조회
+     * 내 전체 주문 조회
      */
     @GetMapping("/my")
     public ResponseEntity<List<OrderListResponseDTO>> getMyOrder() {

@@ -7,18 +7,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
-public record ExhibitionResponseDTO(Long exhibitionId,
-                                    String title,
-                                    String contents,
-                                    String template,
-                                    String background,
-                                    String layout,
-                                    String font,
-                                    String fontColor,
-                                    Long exhibitionViewCount,
-                                    LocalDateTime createdAt,
-                                    Long userId,
-                                    List<PhotoResponseDTO> photos) {
+public record ExhibitionResponseDTO(
+        Long exhibitionId,
+        String title,
+        String contents,
+        String template,
+        String background,
+        String layout,
+        String font,
+        String fontColor,
+        Long exhibitionViewCount,
+        LocalDateTime createdAt,
+        Long userId,
+        List<PhotoResponseDTO> photos) {
 
 
     public static ExhibitionResponseDTO fromEntity(Exhibition exhibition) {

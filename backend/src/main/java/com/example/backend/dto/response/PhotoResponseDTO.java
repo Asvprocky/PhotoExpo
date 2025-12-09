@@ -4,16 +4,17 @@ import com.example.backend.domain.Photo;
 
 import java.time.LocalDateTime;
 
-public record PhotoResponseDTO(Long photoId,
-                               String title,
-                               String description,
-                               String imageUrl,
-                               Long price,
-                               LocalDateTime createdAt,
-                               Long photoViewCount,
-                               Long userId,
-                               Long exhibitionId) {
-    
+public record PhotoResponseDTO(
+        Long photoId,
+        String title,
+        String description,
+        String imageUrl,
+        Long price,
+        LocalDateTime createdAt,
+        Long photoViewCount,
+        Long userId,
+        Long exhibitionId) {
+
     public static PhotoResponseDTO fromEntity(Photo photo) {
         return new PhotoResponseDTO(
                 photo.getPhotoId(),
