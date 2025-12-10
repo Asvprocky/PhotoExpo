@@ -147,7 +147,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/exhibition/my", "/user", "/user/info", "/photo/my", "/templates", "/order/create").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/exhibition/create", "/s3/upload", "/photo/upload", "/photo/*/like/**", "/snsLink").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT, "/exhibition/*", "/snsLink/*").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/exhibition/*", "/photo/*", "/order/*").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/exhibition/*", "/photo/*", "/order/*", "/snsLink/*").hasRole("USER")
                         // 4. 그외 모든 요청 인증 필요
                         .anyRequest().authenticated()
                 );

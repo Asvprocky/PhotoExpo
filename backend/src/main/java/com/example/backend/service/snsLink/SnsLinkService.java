@@ -52,10 +52,30 @@ public class SnsLinkService {
             throw new SecurityException("본인만 수정 할 수 있습니다");
         }
         snsLinks.updateLink(dto);
-        
+
         snsLinkRepository.save(snsLinks);
 
         return SnsLinkResponseDTO.fromEntity(snsLinks);
 
+    }
+
+    /**
+     * 링크 삭제
+     */
+    @Transactional
+    public void deleteSnsLink(Long snsLinkId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        SnsLinks snsLinks = snsLinkRepository.findById(snsLinkId)
+                .orElseThrow(() -> new RuntimeException("SnsLink not found"));
+
+        if (!user.equals(snsLinks.getUser())) {
+            throw new SecurityException("본인만 삭제 할 수 있습니다");
+        }
+
+        snsLinkRepository.delete(snsLinks);
     }
 }

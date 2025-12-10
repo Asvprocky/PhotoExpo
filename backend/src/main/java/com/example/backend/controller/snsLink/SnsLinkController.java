@@ -14,6 +14,9 @@ public class SnsLinkController {
 
     private final SnsLinkService snsLinkService;
 
+    /**
+     * 링크 생성
+     */
     @PostMapping
     public ResponseEntity<SnsLinkResponseDTO> snsLink(@RequestBody SnsLinkRequestDTO dto) {
         SnsLinkResponseDTO snsLinkResponseDTO = snsLinkService.createSnsLink(dto);
@@ -21,6 +24,9 @@ public class SnsLinkController {
 
     }
 
+    /**
+     * 링크 수정
+     */
     @PutMapping("/{snsLink}")
     public ResponseEntity<SnsLinkResponseDTO> snsLinkUpdate(
             @PathVariable Long snsLink,
@@ -28,5 +34,14 @@ public class SnsLinkController {
     ) {
         SnsLinkResponseDTO snsLinkResponseDTO = snsLinkService.updateSnsLink(snsLink, dto);
         return ResponseEntity.status(200).body(snsLinkResponseDTO);
+    }
+
+    /**
+     * 링크 삭제
+     */
+    @DeleteMapping("/{snsLink}")
+    public ResponseEntity<Void> snsLinkDelete(@PathVariable Long snsLink) {
+        snsLinkService.deleteSnsLink(snsLink);
+        return ResponseEntity.status(204).build();
     }
 }
