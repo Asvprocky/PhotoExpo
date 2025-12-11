@@ -38,4 +38,13 @@ public class CommentController {
         return ResponseEntity.status(200).body(response);
     }
 
+    /**
+     * 댓글 삭제
+     */
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
+        return ResponseEntity.status(204).build();
+    }
+
 }

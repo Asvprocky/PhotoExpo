@@ -47,8 +47,18 @@ public class Comment {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    /**
+     * 수정
+     */
     public void updateComment(CommentRequestDTO dto) {
         this.content = dto.getContent();
+    }
+
+    /**
+     * 삭제
+     */
+    public void deleteComment() {
+        this.isDeleted = true;
     }
 
 }

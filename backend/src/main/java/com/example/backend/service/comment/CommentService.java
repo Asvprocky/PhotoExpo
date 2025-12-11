@@ -66,8 +66,7 @@ public class CommentService {
     @Transactional
     public CommentResponseDTO updateComment(Long commentId, CommentRequestDTO dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
@@ -79,6 +78,28 @@ public class CommentService {
         return CommentResponseDTO.fromEntity(commentRepository.save(comment));
     }
 
+    /**
+     * 댓글 삭제
+     */
+    @Transactional
+    public void deleteComment(Long commentId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        if (!comment.getUser().getEmail().equals(email)) {
+            throw new IllegalArgumentException("소유자만 삭제 할 수 있습니다");
+        }
+
+        comment.deleteComment();
+
+    }
+
+
+    /**
+     * 유효성 검증
+     */
     private Photo getPhotoIfPresent(Long photoId) {
         if (photoId == null) return null;
         return photoRepository.findById(photoId)
