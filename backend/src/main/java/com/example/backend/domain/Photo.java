@@ -61,6 +61,12 @@ public class Photo {
     @OneToMany(mappedBy = "photo", cascade = CascadeType.ALL)
     private List<OrderItems> orderItems;
 
+    @OneToMany(mappedBy = "photo",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private List<Comment> comments;
+
     /**
      * 사진 수정
      */

@@ -60,8 +60,9 @@ public class ExhibitionService {
     /**
      * 모든 전시 조회
      * DB에서 모든 전시회를 createdAt 기준 내림차순으로 불러오고
+     * 스트림으로 변환후
      * 각 전시회(Exhibition 엔티티)를 필요한 정보만 있는  ExhibitionResponseDTO로 변환해서
-     * List 로 반환
+     * List 로 다시 변환후 반환
      */
     @Transactional(readOnly = true)
     public List<ExhibitionResponseDTO> getAllExhibition() {

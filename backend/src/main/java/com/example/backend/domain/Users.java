@@ -77,6 +77,9 @@ public class Users {
     private List<Exhibition> exhibitions;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Comment> comments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Orders> orders;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

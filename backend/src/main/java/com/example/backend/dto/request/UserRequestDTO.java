@@ -1,5 +1,6 @@
 package com.example.backend.dto.request;
 
+import com.example.backend.domain.Users;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -48,4 +49,15 @@ public class UserRequestDTO {
     private String username;
 
 
+    public Users toEntity() {
+        return Users.builder()
+                .email(this.email)
+                .password(this.password)
+                .nickname(this.nickname)
+                .username(this.username)
+                .isLock(false)
+                .isSocial(false)
+                .build();
+
+    }
 }

@@ -83,7 +83,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         Users userEntity = userRepository.findByEmailAndIsLockAndIsSocial(username, false, false)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
-        return User.builder() // 스프링 시큐리티의 User 객체
+        return User.builder() // 스프링 시큐리티의 User 내부 객체
                 .username(userEntity.getEmail())
                 .password(userEntity.getPassword())
                 .roles(userEntity.getUserRoleType().name())
@@ -145,12 +145,8 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         Users userEntity = userRepository.findByEmailAndIsSocial(email, false)
                 .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다" + email));
 
-        return new UserResponseDTO(
-                email,
-                userEntity.getIsSocial(),
-                userEntity.getUsername(),
-                userEntity.getNickname()
-        );
+        return UserResponseDTO.fromEntity(email, userEntity);
+
     }
 
     /**

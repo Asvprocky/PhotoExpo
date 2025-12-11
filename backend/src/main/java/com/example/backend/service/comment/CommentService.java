@@ -1,0 +1,79 @@
+package com.example.backend.service.comment;
+
+import com.example.backend.domain.Comment;
+import com.example.backend.domain.Exhibition;
+import com.example.backend.domain.Photo;
+import com.example.backend.domain.Users;
+import com.example.backend.dto.request.CommentRequestDTO;
+import com.example.backend.dto.response.CommentResponseDTO;
+import com.example.backend.repository.CommentRepository;
+import com.example.backend.repository.ExhibitionRepository;
+import com.example.backend.repository.PhotoRepository;
+import com.example.backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+
+public class CommentService {
+
+    private final UserRepository userRepository;
+    private final PhotoRepository photoRepository;
+    private final ExhibitionRepository exhibitionRepository;
+    private final CommentRepository commentRepository;
+
+
+    @Transactional
+    public CommentResponseDTO createComment(CommentRequestDTO dto) {
+        log.info("createComment : {}", dto.getContent());
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 2. 대상 엔티티 조회 (ID가 있다면 조회, 없으면 null)
+        Photo photo = getPhotoIfPresent(dto.getPhotoId());
+        Exhibition exhibition = getExhibitionIfPresent(dto.getExhibitionId());
+
+        // 3. 유효성 검증
+        validateCommentTarget(photo, exhibition);
+
+        Comment comment = Comment.builder()
+                .user(user)
+                .photo(photo)
+                .exhibition(exhibition)
+                .content(dto.getContent())
+                .isDeleted(false)
+                .build();
+
+        return CommentResponseDTO.fromEntity(commentRepository.save(comment));
+    }
+
+    private Photo getPhotoIfPresent(Long photoId) {
+        if (photoId == null) return null;
+        return photoRepository.findById(photoId)
+                .orElseThrow(() -> new EntityNotFoundException("Photo not found"));
+    }
+
+    private Exhibition getExhibitionIfPresent(Long exhibitionId) {
+        if (exhibitionId == null) return null;
+        return exhibitionRepository.findById(exhibitionId)
+                .orElseThrow(() -> new EntityNotFoundException("Exhibition not found"));
+    }
+
+    private void validateCommentTarget(Photo photo, Exhibition exhibition) {
+        if (photo == null && exhibition == null) {
+            throw new IllegalArgumentException("댓글을 달 대상이 필요합니다");
+        }
+        if (photo != null && exhibition != null) {
+            throw new IllegalArgumentException("댓글은 사진 또는 전시 중 하나의 대상에만 달 수 있습니다.");
+        }
+    }
+
+}

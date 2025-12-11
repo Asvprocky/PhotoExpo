@@ -65,6 +65,13 @@ public class Exhibition {
             fetch = FetchType.LAZY)
     private List<Photo> photos;
 
+
+    @OneToMany(mappedBy = "exhibition",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private List<Comment> comments;
+
     /**
      * 수정 요청 메서드
      */
