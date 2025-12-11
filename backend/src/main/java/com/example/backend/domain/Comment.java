@@ -1,5 +1,6 @@
 package com.example.backend.domain;
 
+import com.example.backend.dto.request.CommentRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,5 +47,8 @@ public class Comment {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    public void updateComment(CommentRequestDTO dto) {
+        this.content = dto.getContent();
+    }
 
 }

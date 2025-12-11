@@ -7,10 +7,7 @@ import com.example.backend.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/comment")
@@ -20,6 +17,9 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    /**
+     * 댓글 작성
+     */
     @PostMapping("/create")
     public ResponseEntity<CommentResponseDTO> createComment(@RequestBody CommentRequestDTO dto) {
         log.info("Controller invoked");
@@ -27,6 +27,15 @@ public class CommentController {
         log.info("Response : {}", response);
         return ResponseEntity.status(200).body(response);
 
+    }
+
+    /**
+     * 댓글 수정
+     */
+    @PutMapping("/{commentId}")
+    public ResponseEntity<CommentResponseDTO> updateComment(@PathVariable Long commentId, @RequestBody CommentRequestDTO dto) {
+        CommentResponseDTO response = commentService.updateComment(commentId, dto);
+        return ResponseEntity.status(200).body(response);
     }
 
 }

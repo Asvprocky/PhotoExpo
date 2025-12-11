@@ -29,6 +29,11 @@ public class CommentService {
     private final CommentRepository commentRepository;
 
 
+    /**
+     * 댓글 작성 메서드
+     * Exhibition ID 와 PhotoID 둘다 댓글 작성 가능
+     * 둘중 하나만 값을 받아 유효성 검증 이후 저장
+     */
     @Transactional
     public CommentResponseDTO createComment(CommentRequestDTO dto) {
         log.info("createComment : {}", dto.getContent());
@@ -52,6 +57,25 @@ public class CommentService {
                 .isDeleted(false)
                 .build();
 
+        return CommentResponseDTO.fromEntity(commentRepository.save(comment));
+    }
+
+    /**
+     * 댓글 수정
+     */
+    @Transactional
+    public CommentResponseDTO updateComment(Long commentId, CommentRequestDTO dto) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        if (!comment.getUser().getEmail().equals(email)) {
+            throw new IllegalArgumentException("본인만 수정 할 수 있습니다");
+        }
+        comment.updateComment(dto);
         return CommentResponseDTO.fromEntity(commentRepository.save(comment));
     }
 
