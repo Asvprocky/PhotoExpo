@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +25,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <div className="navbar">
           <Link href="/">
-            <img src="/PhotoExpoLogo2.png" alt="PhotoExpo Logo" className="w-32 h-auto ml-0" />
+            <Image
+              src="/PhotoExpoLogo2.png"
+              alt="PhotoExpo Logo"
+              width={380}
+              height={60}
+              className="w-32 h-auto ml-0"
+              priority
+            />
           </Link>
           <Link href="/list">List</Link>
           <Link href="/mypage">MyPage</Link>
