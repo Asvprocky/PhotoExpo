@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import Image from "next/image";
+import ReactQueryProviders from "@/util/ReactQueryProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +36,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             />
           </Link>
           <Link href="/list">List</Link>
-          <Link href="/mypage">MyPage</Link>
+          <Link href="/user/info">MyPage</Link>
+          <Link href="/login">Login</Link>
+          <Link href="/join">Join</Link>
         </div>
-        {children}
+        <ReactQueryProviders>{children}</ReactQueryProviders>
       </body>
     </html>
   );
