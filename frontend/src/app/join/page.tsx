@@ -221,6 +221,7 @@ export default function JoinPage() {
         {/* 가입 버튼 */}
         <button
           type="submit"
+          // 유효성 검증 실패시 버튼 클릭 X
           disabled={loading || isEmailValid !== true}
           style={{
             marginTop: "10px",
