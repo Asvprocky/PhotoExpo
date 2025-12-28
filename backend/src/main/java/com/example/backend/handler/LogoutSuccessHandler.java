@@ -56,7 +56,7 @@ public class LogoutSuccessHandler implements LogoutHandler {
             ResponseCookie deleteCookie = ResponseCookie
                     .from("refreshToken", "")
                     .httpOnly(true)
-                    .secure(false)   // https 환경이면 true
+                    // .secure(true)   // https 환경이면 주석 해제
                     .sameSite("Lax")
                     .path("/")
                     .maxAge(0)

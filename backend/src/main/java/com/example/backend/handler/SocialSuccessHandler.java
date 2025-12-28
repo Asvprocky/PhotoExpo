@@ -40,12 +40,12 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
         // 발급한 RefreshToken DB 저장
         jwtService.addRefreshToken(username, refreshToken);
 
-        // 응답
+        // refreshToken 쿠키생성 (브라우저 자동 저장용)
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
-        refreshCookie.setSecure(false);
         refreshCookie.setMaxAge(10); // 10초 (프론트에서 발급 후 바로 헤더 전환 로직 진행 예정)
+       // refreshCookie.setSecure(true); // https 적용 시 주석 해제
 
         response.addCookie(refreshCookie);
         response.sendRedirect("http://localhost:3000/cookie"); // 프론트로 쿠키를 담아서 보내줌
