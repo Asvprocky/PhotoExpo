@@ -19,6 +19,7 @@ public record ExhibitionResponseDTO(
         Long exhibitionViewCount,
         LocalDateTime createdAt,
         Long userId,
+        String userEmail,
         List<PhotoResponseDTO> photos) {
 
 
@@ -44,6 +45,7 @@ public record ExhibitionResponseDTO(
                 exhibition.getExhibitionViewCount(),
                 exhibition.getCreatedAt(),
                 exhibition.getUser().getUserId(),
+                exhibition.getUser().getEmail(),
                 photoDtos
         );
     }

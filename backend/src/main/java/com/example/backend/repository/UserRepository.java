@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     // loadUser 데이터 베이스 조회
     Optional<Users> findByEmailAndIsSocial(String email, boolean isSocial);
 
+    Optional<Users> findByEmailAndIsLock(String email, boolean isLock);
+
     // 회원 삭제 , 탈퇴
     @Transactional
     void deleteByEmail(String email);

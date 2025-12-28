@@ -9,6 +9,7 @@ import com.example.backend.dto.response.UserResponseDTO;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.service.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,6 +33,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService extends DefaultOAuth2UserService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
@@ -79,6 +81,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        log.info("loadUserByUsername : {}", username);
 
         Users userEntity = userRepository.findByEmailAndIsLockAndIsSocial(username, false, false)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
@@ -142,7 +145,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
     @Transactional(readOnly = true)
     public UserResponseDTO readUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName(); // Email 값
-        Users userEntity = userRepository.findByEmailAndIsSocial(email, false)
+        Users userEntity = userRepository.findByEmailAndIsLock(email, false)
                 .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다" + email));
 
         return UserResponseDTO.fromEntity(email, userEntity);
@@ -174,17 +177,17 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
 
             attributes = (Map<String, Object>) oAuth2User.getAttributes().get("response"); // 유저 정보(JSON) 를 담은 맵(Map) Key-Value 구조
 
-            username = registrationId + "_" + attributes.get("id").toString(); //  각 소셜 로그인마다 id 충돌 방지
+            username = attributes.get("name").toString();
             email = attributes.get("email").toString();
-            nickname = attributes.get("name").toString();
+            nickname = registrationId + "_" + attributes.get("id").toString().substring(0, 4); //  각 소셜 로그인마다 id 충돌 방지
 
         } else if (registrationId.equals(SocialProviderType.GOOGLE.name())) {
 
             attributes = (Map<String, Object>) oAuth2User.getAttributes();
 
-            username = registrationId + "_" + attributes.get("sub").toString();
+            username = attributes.get("name").toString();
             email = attributes.get("email").toString();
-            nickname = attributes.get("name").toString();
+            nickname = registrationId + "_" + attributes.get("sub").toString().substring(0, 4);
 
         } else {
             throw new OAuth2AuthenticationException("지원하지 않는 소셜 로그인 입니다.");
@@ -218,7 +221,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         }
         authorities = List.of(new SimpleGrantedAuthority(role)); // 권한 리스트
 
-        return new CustomOAuth2User(attributes, authorities, username);
+        return new CustomOAuth2User(attributes, authorities, email);
     }
 
 

@@ -64,7 +64,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -136,8 +136,8 @@ public class SecurityConfig {
         // 인가
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 전시 조회 (전체 + 단일) 누구나 허용
-                        .requestMatchers(HttpMethod.GET, "/exhibition/all", "/exhibition/*", "/photo/*").permitAll()
+                        // 1. 전시 조회 (전체 + 단일) 누구나 허용  , Swagger 테스트 시 "/swagger-ui/**","/**" 추가
+                        .requestMatchers(HttpMethod.GET, "/login/**","/exhibition/all", "/exhibition/*", "/photo/*").permitAll()
 
                         // 2. 회원가입 등 공개
                         .requestMatchers(HttpMethod.POST, "/user/exist", "/user/join").permitAll()

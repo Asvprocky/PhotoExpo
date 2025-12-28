@@ -61,16 +61,13 @@ public class OrderService {
 
         long totalOrderPrice = 0L; // 총 금액 계산용
 
-        // 5. 주문 아이템 하나씩 생성 및 연결
         for (OrderItemsRequestDTO itemDTO : dto.getItems()) {
-            // photoId를 Key로 사용하여 Map에 저장된 Photo 객체 전체를 가져옴
             Photo photo = photoMap.get(itemDTO.getPhotoId());
 
             if (photo == null) {
                 throw new RuntimeException("존재하지 않는 사진 ID입니다: " + itemDTO.getPhotoId());
             }
 
-            // 주문 아이템 생성 (가격은 DB의 Photo 가격 사용 -> 보안 강화)
             OrderItems orderItem = OrderItems.builder()
                     .orders(order) // 연관간계 설정 1
                     .photo(photo)
@@ -78,7 +75,6 @@ public class OrderService {
                     .price(photo.getPrice())
                     .build();
 
-            // 연관관계 설정 2, order에 orderItem 넣어주기
             order.getOrderItems().add(orderItem);
 
             // 총액 누적
@@ -88,7 +84,6 @@ public class OrderService {
         // 총 금액 저장
         order.setTotalPrice(totalOrderPrice);
 
-        // 6. 저장 (Cascade로 인해 OrderItems도 자동 저장됨)
         orderRepository.save(order);
 
         return OrderResponseDTO.fromEntity(order);

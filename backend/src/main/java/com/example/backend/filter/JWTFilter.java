@@ -51,6 +51,7 @@ public class JWTFilter extends OncePerRequestFilter {
             // **GET으로만 공개된 경로**
             if (pathMatcher.match("/exhibition/*", requestUri) ||
                     pathMatcher.match("/photo/*", requestUri) ||
+                    pathMatcher.match("/login/**", requestUri) ||
                     pathMatcher.match("/exhibition/all", requestUri)) {
                 log.warn("✅ Public Match Success! Filter SKIP.");
                 return true;

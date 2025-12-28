@@ -48,16 +48,4 @@ public class UserRequestDTO {
     @Size(min = 2, max = 20)
     private String username;
 
-
-    public Users toEntity() {
-        return Users.builder()
-                .email(this.email)
-                .password(this.password)
-                .nickname(this.nickname)
-                .username(this.username)
-                .isLock(false)
-                .isSocial(false)
-                .build();
-
-    }
 }
