@@ -75,8 +75,16 @@ public class JwtService {
         refreshCookie.setHttpOnly(true);
         refreshCookie.setSecure(false);
         refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(5); // 만료 시간을 5초로 짧게 설정해서 브라우저에서 삭제 되도함.
-        response.addCookie(refreshCookie);
+        refreshCookie.setMaxAge(0); // 만료 시간을 설정해서 브라우저에서 삭제 되도함.
+
+        response.addCookie(refreshCookie); //브라우저로 쿠키 저장
+
+        Cookie accessCookie = new Cookie("accessToken", newAccessToken);// 브라우저로 AccessToken 담긴 쿠키저장
+        accessCookie.setHttpOnly(true);
+        accessCookie.setSecure(false);
+        accessCookie.setPath("/"); // 모든 경로에서 접근 가능
+        accessCookie.setMaxAge(60 * 60); // 1 시간
+        response.addCookie(accessCookie);
 
         // 새로운 토큰 발급
         return new JWTResponseDTO(newAccessToken, newRefreshToken);

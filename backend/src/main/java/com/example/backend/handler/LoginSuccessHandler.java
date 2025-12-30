@@ -47,8 +47,8 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         accessCookie.setMaxAge(60 * 60); // 1시간 (JWT 유효시간과 동일하게 설정)
         // accessCookie.setSecure(true); // https 적용 시 주석 해제
 
-        response.addCookie(accessCookie);
         // 응답
+        response.addCookie(accessCookie);
         response.setContentType("application/json;charset=UTF-8");
 
         // Map에 담고 나서 ObjectMapper로 JSON 문자열로 변환
