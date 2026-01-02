@@ -20,15 +20,15 @@ export default async function Exhibition() {
   let errorMsg = null;
 
   try {
-    const response = await fetch("http://localhost:8080/exhibition/all", {
+    const res = await fetch("http://localhost:8080/exhibition/all", {
       cache: "no-store",
     });
 
-    if (response.ok) {
-      exhibitions = await response.json();
+    if (res.ok) {
+      exhibitions = await res.json();
     } else {
-      console.error("Failed to fetch data:", response.status);
-      errorMsg = `데이터 로딩 실패 (${response.status})`;
+      console.error("Failed to fetch data:", res.status);
+      errorMsg = `데이터 로딩 실패 (${res.status})`;
     }
   } catch (error) {
     console.error("Fetch error:", error);

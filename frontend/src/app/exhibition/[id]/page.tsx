@@ -24,18 +24,18 @@ export default async function ExhibitionDetail({ params }: { params: Promise<{ i
 
   try {
     // 3. 백엔드 데이터 요청
-    const response = await fetch(`http://localhost:8080/exhibition/${id}`, {
+    const res = await fetch(`http://localhost:8080/exhibition/${id}`, {
       cache: "no-store", // 최신 데이터 유지를 위해 캐시 방지
     });
 
-    if (response.ok) {
-      const json = await response.json();
+    if (res.ok) {
+      const json = await res.json();
       // 백엔드 응답 구조에 따라 경로가 다를 수 있으니 console.log로 확인 권장
       // 예: json.data 혹은 json.data.exhibition 등
       data = json.data || json;
     } else {
-      console.error("Failed to fetch detail:", response.status);
-      errorMsg = `데이터를 불러올 수 없습니다. (${response.status})`;
+      console.error("Failed to fetch detail:", res.status);
+      errorMsg = `데이터를 불러올 수 없습니다. (${res.status})`;
     }
   } catch (error) {
     console.error("Fetch error:", error);
