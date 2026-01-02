@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -17,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 @RequiredArgsConstructor
-public class LogoutSuccessHandler implements LogoutHandler {
+public class RefreshTokenLogoutHandler implements LogoutHandler {
 
     private final JwtService jwtService;
 
@@ -53,7 +54,7 @@ public class LogoutSuccessHandler implements LogoutHandler {
             jwtService.deleteRefreshToken(refreshToken);
 
             // 브라우저 쿠키 삭제
-            ResponseCookie deleteCookie = ResponseCookie
+            ResponseCookie deleteRefreshCookie = ResponseCookie
                     .from("refreshToken", "")
                     .httpOnly(true)
                     // .secure(true)   // https 환경이면 주석 해제
@@ -62,7 +63,16 @@ public class LogoutSuccessHandler implements LogoutHandler {
                     .maxAge(0)
                     .build();
 
-            response.addHeader("Set-Cookie", deleteCookie.toString());
+            response.addHeader("Set-Cookie", deleteRefreshCookie.toString());
+
+            ResponseCookie deleteAccessToken = ResponseCookie
+                    .from("accessToken", "")
+                    .httpOnly(false)
+                    .sameSite("Lax")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+            response.addHeader("Set-Cookie", deleteAccessToken.toString());
 
         } catch (IOException e) {
             throw new RuntimeException("리프레시 토큰을 읽는 과정에서 실패 했습니다" + e);
