@@ -2,17 +2,16 @@ package com.example.backend.handler;
 
 import com.example.backend.common.util.JWTUtil;
 import com.example.backend.service.jwt.JwtService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.rmi.ServerException;
 
 @Component
 @RequiredArgsConstructor
@@ -21,34 +20,43 @@ public class SocialSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
 
-    /**
-     * 소셜 로그인 성공시
-     * authentication 매개변수에 들어온 인자를 파싱후 refreshToken 발급
-     * 발급한 토큰은 DB 에 저장됨과 쿠키 생성후 "refreshToken" 이라는 키값으로 브라우저에 저장
-     */
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServerException {
-        // username, role
-        String username = authentication.getName();
-        String role = authentication.getAuthorities().iterator().next().getAuthority();
+    public void onAuthenticationSuccess(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication
+    ) throws IOException {
 
-        // JWT(Refresh Token) 발급
+        // 1. 사용자 정보
+        String username = authentication.getName();
+        String role = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority(); // ROLE_USER 그대로 사용
+
+        // 2. JWT 발급
+        String accessToken = JWTUtil.createJWT(username, "ROLE_" + role, true);
         String refreshToken = JWTUtil.createJWT(username, "ROLE_" + role, false);
 
-        // 발급한 RefreshToken DB 저장
+        // 3. RefreshToken DB 저장
         jwtService.addRefreshToken(username, refreshToken);
 
-        // refreshToken 쿠키생성 (브라우저 자동 저장용)
-        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(10); // 10초 (프론트에서 발급 후 바로 헤더 전환 로직 진행 예정)
-       // refreshCookie.setSecure(true); // https 적용 시 주석 해제
+        // 4. RefreshToken 쿠키 (HttpOnly)
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .build();
+        response.addHeader("Set-Cookie", refreshCookie.toString());
 
-        response.addCookie(refreshCookie);
-        response.sendRedirect("http://localhost:3000/cookie"); // 프론트로 쿠키를 담아서 보내줌
+
+        // 5. accessToken은 URL로 전달 (redirect)
+        response.sendRedirect(
+                "http://localhost:3000/oauth-success");
+
     }
 
 }
+

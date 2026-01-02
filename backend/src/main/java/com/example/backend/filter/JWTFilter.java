@@ -36,6 +36,11 @@ public class JWTFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
+        // 0. 로그아웃은 무조건 통과
+        if (pathMatcher.match("/logout", requestUri)) {
+            return true;
+        }
+
         log.warn("요청 URI: {} (Method: {})", requestUri, method);
 
         // 1단계: 인증이 필요한 예외 경로를 먼저 검사합니다.
@@ -63,6 +68,7 @@ public class JWTFilter extends OncePerRequestFilter {
             // **POST로 공개된 경로**
             if (pathMatcher.match("/user", requestUri) ||
                     pathMatcher.match("/user/join", requestUri) ||
+                    pathMatcher.match("/logout", requestUri) ||
                     pathMatcher.match("/user/exist", requestUri)) {
                 return true;
             }

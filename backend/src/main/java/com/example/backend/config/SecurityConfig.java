@@ -3,7 +3,7 @@ package com.example.backend.config;
 import com.example.backend.domain.UserRoleType;
 import com.example.backend.filter.JWTFilter;
 import com.example.backend.filter.LoginFilter;
-import com.example.backend.handler.LogoutSuccessHandler;
+import com.example.backend.handler.RefreshTokenLogoutHandler;
 import com.example.backend.service.jwt.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -117,7 +117,12 @@ public class SecurityConfig {
         // 로그아웃 필터 , RefreshToken 삭제 핸들러
         http
                 .logout(logout -> logout
-                        .addLogoutHandler(new LogoutSuccessHandler(jwtService)));
+                        .logoutUrl("/logout")
+                        .addLogoutHandler(new RefreshTokenLogoutHandler(jwtService))
+                        .logoutSuccessHandler((request, response, auth) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                        })
+                );
 
         // 기존 Form 기반 인증 필터들 disable
         http
@@ -137,7 +142,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         // 1. 전시 조회 (전체 + 단일) 누구나 허용  , Swagger 테스트 시 "/swagger-ui/**","/**" 추가
-                        .requestMatchers(HttpMethod.GET, "/login/**","/exhibition/all", "/exhibition/*", "/photo/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/login/**", "/logout", "/exhibition/all", "/exhibition/*", "/photo/*").permitAll()
 
                         // 2. 회원가입 등 공개
                         .requestMatchers(HttpMethod.POST, "/user/exist", "/user/join").permitAll()

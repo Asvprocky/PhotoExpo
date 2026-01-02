@@ -45,7 +45,7 @@ public class UserController {
     /**
      * 유저 정보
      */
-    @GetMapping(value = "/info", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/info")
     public UserResponseDTO readUserApi() {
         return userService.readUser();
     }

@@ -1,21 +1,14 @@
 package com.example.backend.handler;
 
-import com.example.backend.common.util.JWTUtil;
 import com.example.backend.service.jwt.JwtService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 @RequiredArgsConstructor
 public class RefreshTokenLogoutHandler implements LogoutHandler {
@@ -30,55 +23,24 @@ public class RefreshTokenLogoutHandler implements LogoutHandler {
      */
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        try {
-            String body = new BufferedReader(new InputStreamReader(request.getInputStream()))
-                    .lines().reduce("", String::concat);
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return;
 
-            if (!StringUtils.hasText(body)) return;
+        for (Cookie cookie : cookies) {
+            if ("refreshToken".equals(cookie.getName())) {
+                String refreshToken = cookie.getValue();
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(body); // 트리구조로 파싱
-            String refreshToken = jsonNode.has("refreshToken") ? jsonNode.get("refreshToken").asText() : null;
+                jwtService.deleteRefreshToken(refreshToken);
 
-            // 유효성 검증
-            if (refreshToken == null) {
-                return;
+                ResponseCookie delete = ResponseCookie.from("refreshToken", "")
+                        .httpOnly(true)
+                        .path("/")
+                        .maxAge(0)
+                        .build();
+
+                response.addHeader("Set-Cookie", delete.toString());
+
             }
-
-            Boolean isValid = JWTUtil.isValid(refreshToken, false);
-            if (!isValid) {
-                return;
-            }
-
-            // RefreshToken 삭제
-            jwtService.deleteRefreshToken(refreshToken);
-
-            // 브라우저 쿠키 삭제
-            ResponseCookie deleteRefreshCookie = ResponseCookie
-                    .from("refreshToken", "")
-                    .httpOnly(true)
-                    // .secure(true)   // https 환경이면 주석 해제
-                    .sameSite("Lax")
-                    .path("/")
-                    .maxAge(0)
-                    .build();
-
-            response.addHeader("Set-Cookie", deleteRefreshCookie.toString());
-
-            ResponseCookie deleteAccessToken = ResponseCookie
-                    .from("accessToken", "")
-                    .httpOnly(false)
-                    .sameSite("Lax")
-                    .path("/")
-                    .maxAge(0)
-                    .build();
-            response.addHeader("Set-Cookie", deleteAccessToken.toString());
-
-        } catch (IOException e) {
-            throw new RuntimeException("리프레시 토큰을 읽는 과정에서 실패 했습니다" + e);
         }
-
-
     }
-
 }
