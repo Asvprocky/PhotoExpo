@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { logoutFetch } from "../services/logoutFetch";
+import { logoutFetch } from "../services/auth";
 
 const LogoutButton = () => {
   const router = useRouter();

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { joinFetch } from "@/services/joinFetch";
-import { checkEmailExistsFetch } from "@/services/checkEmailExistsFetch";
+import { joinFetch } from "@/services/auth";
+import { checkEmailExistsFetch } from "@/services/auth";
 export default function JoinForm() {
   const router = useRouter();
 

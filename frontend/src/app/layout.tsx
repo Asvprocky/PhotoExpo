@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import Image from "next/image";
-import ReactQueryProviders from "@/provider/ReactQueryProviders";
+import ReactQueryProviders from "@/providers/ReactQueryProviders";
 import LogoutButton from "../components/LogoutButton";
 
 const geistSans = Geist({
