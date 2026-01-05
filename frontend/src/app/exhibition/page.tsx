@@ -49,8 +49,8 @@ export default async function Exhibition() {
 
         return (
           // 2. Link 컴포넌트로 감싸기
-          // key는 가장 바깥 태그인 Link에 줘야 합니다.
-          // href에 상세 페이지 경로를 지정합니다. (/exhibition/1, /exhibition/2 ...)
+          // key는 가장 바깥 태그인 Link에 줘야 함.
+          // href에 상세 페이지 경로를 지정. (/exhibition/1, /exhibition/2 ...)
           <Link
             href={`/exhibition/${item.exhibitionId}`}
             key={item.exhibitionId}

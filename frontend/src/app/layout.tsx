@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
 import "./globals.css";
-import Image from "next/image";
 import ReactQueryProviders from "@/providers/ReactQueryProviders";
-import LogoutButton from "../components/LogoutButton";
+import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,22 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="navbar">
-          <Link href="/">
-            <Image
-              src="/PhotoExpoLogo2.png"
-              alt="PhotoExpo Logo"
-              width={380}
-              height={60}
-              className="w-32 h-auto ml-0"
-              priority
-            />
-          </Link>
-          <Link href="/user/info">MyPage</Link>
-          <Link href="/login">Login</Link>
-          <Link href="/join">Join</Link>
-          <LogoutButton />
-        </div>
+        <Navbar />
         <ReactQueryProviders>{children}</ReactQueryProviders>
       </body>
     </html>

@@ -18,6 +18,7 @@ export default function OAuthSuccessPage() {
       .then((data) => {
         localStorage.setItem("accessToken", data.accessToken);
         router.replace("/");
+        router.refresh();
       })
       .catch(() => {
         router.replace("/login");

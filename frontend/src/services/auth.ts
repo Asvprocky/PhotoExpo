@@ -40,7 +40,7 @@ export async function authFetch(url: string, options: RequestInit = {}) {
       throw new Error("인증 만료");
     }
 
-    const { accessToken: newAccessToken } = await refreshRes.json();
+    const { accessToken: newAccessToken } = await refreshRes.json(); // 반환 한 JWTResponseDTO 안에있는 accessToken 값만 뽑아서 사용
     localStorage.setItem("accessToken", newAccessToken);
 
     // 원래 요청 재시도

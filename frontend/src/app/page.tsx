@@ -6,10 +6,8 @@ export default function Home() {
     <div>
       <h1>Home</h1>
       <h1>
-        <Link href="/users">Users</Link>
-      </h1>
-      <h1>
         <Link href="/exhibition">Exhibition</Link>
+        <Link href="/create">프로젝트 생성</Link>
       </h1>
     </div>
   );
