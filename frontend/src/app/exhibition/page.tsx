@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link"; // 1. Link 컴포넌트 임포트
+import Link from "next/link";
 
 // 백엔드 데이터 구조에 맞춘 타입 정의
 interface Photo {
@@ -10,7 +10,7 @@ interface Photo {
 interface ExhibitionData {
   exhibitionId: number;
   title: string;
-  userEmail: String;
+  userEmail: string;
   userId: number;
   photos?: Photo[];
 }
@@ -36,72 +36,56 @@ export default async function Exhibition() {
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "20px" }}>
-        모든 전시 ({exhibitions.length}개)
-      </h1>
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+    // pt-20: 네비게이션 바(h-14) 높이를 고려한 상단 여백
+    // px-10: 네비게이션 바와 동일한 좌우 간격
+    <div className="pt-20 px-10 pb-10">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">모든 전시 ({exhibitions.length}개)</h1>
 
-      {exhibitions.map((item) => {
-        const photoList = item.photos || [];
-        const hasPhoto = photoList.length > 0;
-        const imageUrl = hasPhoto ? photoList[0].imageUrl : null;
+      {errorMsg && <p className="text-red-500 mb-4">{errorMsg}</p>}
 
-        return (
-          // 2. Link 컴포넌트로 감싸기
-          // key는 가장 바깥 태그인 Link에 줘야 함.
-          // href에 상세 페이지 경로를 지정. (/exhibition/1, /exhibition/2 ...)
-          <Link
-            href={`/exhibition/${item.exhibitionId}`}
-            key={item.exhibitionId}
-            style={{ textDecoration: "none", color: "inherit" }} // 링크의 기본 밑줄/색상 제거 스타일
-          >
-            <div
-              style={{
-                borderBottom: "1px solid #ccc",
-                padding: "20px 0",
-                cursor: "pointer", // 마우스를 올렸을 때 클릭 가능하다는 표시
-                transition: "background-color 0.2s",
-              }}
-              // hover 효과를 주려면 CSS 클래스나 styled-component가 좋지만, 인라인으로는 제한적임
+      <div className="flex flex-col">
+        {exhibitions.map((item) => {
+          const photoList = item.photos || [];
+          const hasPhoto = photoList.length > 0;
+          const imageUrl = hasPhoto ? photoList[0].imageUrl : null;
+
+          return (
+            <Link
+              href={`/exhibition/${item.exhibitionId}`}
+              key={item.exhibitionId}
+              className="group border-b border-gray-200 py-8 transition-all hover:bg-gray-50 no-underline text-inherit block"
             >
-              <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>{item.title}</h2>
-              <p style={{ color: "#666", marginBottom: "10px" }}>
-                작성자: {item.userEmail || "알 수 없음"}
-              </p>
-              <p>전시회 번호 :{item.exhibitionId}</p>
-              <p>유저 아이디:{item.userId}</p>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-xl font-bold group-hover:text-blue-600 transition-colors">
+                  {item.title}
+                </h2>
 
-              {imageUrl ? (
-                <div style={{ maxWidth: "300px" }}>
-                  <img
-                    src={imageUrl}
-                    alt={item.title}
-                    width="300"
-                    referrerPolicy="no-referrer"
-                    crossOrigin="anonymous"
-                    style={{ display: "block", objectFit: "cover" }}
-                  />
+                <div className="text-sm text-gray-500 flex flex-col gap-1">
+                  <p>작성자: {item.userEmail || "알 수 없음"}</p>
+                  <p>전시회 번호: {item.exhibitionId}</p>
+                  <p>유저 아이디: {item.userId}</p>
                 </div>
-              ) : (
-                <div
-                  style={{
-                    width: "300px",
-                    height: "200px",
-                    background: "#eee",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#888",
-                  }}
-                >
-                  이미지 없음
-                </div>
-              )}
-            </div>
-          </Link>
-        );
-      })}
+
+                {imageUrl ? (
+                  <div className="mt-4 max-w-[300px] overflow-hidden rounded-lg shadow-sm">
+                    <img
+                      src={imageUrl}
+                      alt={item.title}
+                      className="w-full h-auto object-cover transform transition-transform group-hover:scale-105"
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-4 w-[300px] h-[200px] bg-gray-100 flex items-center justify-center text-gray-400 rounded-lg border border-dashed border-gray-300">
+                    이미지 없음
+                  </div>
+                )}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

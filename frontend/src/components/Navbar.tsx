@@ -1,57 +1,90 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import LogoutButton from "./LogoutButton";
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation"; // 경로 감지용
+import ProfileDropdown from "./ProfileDropdown";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false); // 마운트 상태 하이드레이션 문제.
+  const [mounted, setMounted] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    // 1. 브라우저에 컴포넌트가 나타나면 mounted를 true로 변경
-    setMounted(true);
+  // 현재 페이지가 마이페이지인지 확인
+  const isMyPage = pathname === "/user/info";
 
-    // 2. 로그인 토큰 확인
+  useEffect(() => {
+    // 스크롤 감지 로직
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
     const token = localStorage.getItem("accessToken");
     setIsLoggedIn(!!token);
   }, [pathname]);
 
   return (
-    <div className="navbar">
-      <Link href="/">
-        <Image
-          src="/PhotoExpoLogo2.png"
-          alt="PhotoExpo Logo"
-          width={380}
-          height={60}
-          className="w-32 h-auto ml-0"
-          priority
-        />
-      </Link>
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 flex items-center justify-between px-10 h-14 transition-all duration-300 ${
+        isMyPage && !isScrolled
+          ? "bg-transparent border-none shadow-none" // 마이페이지일 때: 투명
+          : "bg-white border-b border-gray-100 shadow-sm" // 일반 페이지: 흰색 배경
+      }`}
+    >
+      {/* --- 1. 왼쪽 영역 (로고만 남김) --- */}
+      <div className="flex items-center">
+        <Link href="/">
+          <Image
+            src="/PhotoExpoLogo2.png"
+            alt="Logo"
+            width={144}
+            height={30}
+            priority
+            className={isMyPage ? "brightness-0 invert" : ""}
+          />
+        </Link>
+      </div>
 
-      <Link href="/user/info">MyPage</Link>
-
-      {/* 3. 중요: mounted가 true(클라이언트 로드 완료)일 때만 
-            로그인/로그아웃 버튼을 그립니다. 
-      */}
-      {mounted && (
-        <>
-          {/* 로그인 전: 토큰이 없을 때 */}
-          {!isLoggedIn && (
-            <>
-              <Link href="/login">Login</Link>
-              <Link href="/join">Join</Link>
-            </>
-          )}
-
-          {/* 로그인 후: 토큰이 있을 때 */}
-          {isLoggedIn && <LogoutButton />}
-        </>
-      )}
-    </div>
+      {/* --- 2. 중앙 영역 (추가됨) --- */}
+      <div
+        className={`absolute left-1/2 transform -translate-x-1/2 flex gap-8 text-base font-bold tracking-tight transition-colors ${
+          isMyPage ? "text-white" : "text-gray-700"
+        }`}
+      >
+        <Link href="/exhibition" className="hover:opacity-70">
+          Exhibition
+        </Link>
+        {/* 나중에 메뉴 추가시 자동으로 중앙 정렬됨 */}
+      </div>
+      {/* --- 오른쪽 영역 --- */}
+      <div className="flex items-center">
+        {mounted && (
+          <>
+            {!isLoggedIn ? (
+              <Link
+                href="/login"
+                className={`flex items-center justify-center px-8 h-10 border-2 rounded-full transition-all font-black ${
+                  isMyPage
+                    ? "text-white border-white hover:bg-white/10"
+                    : "text-blue-600 border-blue-600 hover:bg-blue-50"
+                }`}
+              >
+                로그인
+              </Link>
+            ) : (
+              // 프로필 드롭다운 컴포넌트 내부의 텍스트 색상도 필요시 조절
+              <ProfileDropdown />
+            )}
+          </>
+        )}
+      </div>
+    </nav>
   );
 }
