@@ -60,70 +60,45 @@ export default async function ExhibitionDetail({ params }: { params: Promise<{ i
   // 6. 이미지 데이터 처리 로직 (리스트 뷰에서 가져옴)
   const photoList = data.photos || [];
 
+  // app/exhibition/[id]/page.tsx (내부 UI 부분 예시)
   return (
-    <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
-      {/* 헤더 영역 */}
-      <div style={{ borderBottom: "2px solid #333", paddingBottom: "10px", marginBottom: "20px" }}>
-        <h1 style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "10px" }}>{data.title}</h1>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            color: "#666",
-            fontSize: "14px",
-          }}
-        >
-          <span>
-            작성자: {data.userEmail} (ID: {data.userId})
-          </span>
-          <span>
-            조회수: {data.exhibitionViewCount} | No. {id}
-          </span>
+    <div className="bg-white min-h-screen">
+      {/* 1. 상단 섹션 (어두운 배경 + 제목) */}
+      <div className="bg-[#191919] text-white pt-24 pb-16 px-10 text-center">
+        <h1 className="text-5xl font-black mb-4 tracking-tighter uppercase">{data.title}</h1>
+        <p className="text-gray-400 text-xs font-medium tracking-[0.3em] uppercase">
+          Exhibition No. {id} | View {data.exhibitionViewCount}
+        </p>
+      </div>
+
+      {/* 2. 작성자 및 상세 설명 섹션 */}
+      <div className="max-w-4xl mx-auto px-10 py-16">
+        <div className="flex items-center gap-4 mb-10 border-b border-gray-100 pb-8">
+          <div className="w-12 h-12 bg-gray-200 rounded-full" /> {/* 프로필 이미지 자리 */}
+          <div>
+            <p className="text-sm text-gray-400 font-bold uppercase tracking-wider">Created by</p>
+            <p className="text-lg font-black text-gray-900">{data.userEmail}</p>
+          </div>
+        </div>
+
+        <div className="text-lg leading-relaxed text-gray-700 font-medium whitespace-pre-wrap">
+          {data.contents}
         </div>
       </div>
 
-      {/* 본문 내용 영역 */}
-      <div
-        style={{ minHeight: "200px", fontSize: "16px", lineHeight: "1.6", marginBottom: "40px" }}
-      >
-        {data.contents}
-      </div>
-
-      {/* 이미지 표시 영역 */}
-      <div>
-        <h3 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "15px" }}>전시 사진</h3>
-        {photoList.length > 0 ? (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-            {photoList.map((photo) => (
-              <div key={photo.photoId} style={{ border: "1px solid #eee", padding: "5px" }}>
-                <img
-                  src={photo.imageUrl}
-                  alt={data?.title || "전시 이미지"}
-                  width="400"
-                  // S3 및 로컬호스트 이미지 정책 우회 설정
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                  style={{ display: "block", maxWidth: "100%", height: "auto", objectFit: "cover" }}
-                />
-              </div>
-            ))}
+      {/* 3. 이미지 리스트 섹션 (와이드하게 배치) */}
+      <div className="flex flex-col gap-10 pb-20">
+        {photoList.map((photo) => (
+          <div key={photo.photoId} className="w-full bg-gray-50 flex justify-center">
+            <img
+              src={photo.imageUrl}
+              alt="Exhibition Artwork"
+              className="max-w-full h-auto shadow-lg"
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+            />
           </div>
-        ) : (
-          <div
-            style={{
-              width: "100%",
-              height: "150px",
-              background: "#f0f0f0",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#888",
-              borderRadius: "8px",
-            }}
-          >
-            등록된 이미지가 없습니다.
-          </div>
-        )}
+        ))}
       </div>
     </div>
   );

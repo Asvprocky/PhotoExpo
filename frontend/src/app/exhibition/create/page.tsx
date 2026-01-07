@@ -7,72 +7,137 @@ import { authFetch } from "@/services/auth";
 const BASE_URL = "http://localhost:8080";
 
 export default function UnifiedUploadPage() {
+  /* ==============================
+   * 1️⃣ 기본 훅 / 라우터 / ref
+   * ============================== */
   const router = useRouter();
+
+  // 파일 input을 직접 클릭하기 위한 ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [isExhibitionMode, setIsExhibitionMode] = useState(false);
-  const [title, setTitle] = useState("");
-  const [desc, setDesc] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  /* ==============================
+   * 2️⃣ 상태(state) 정의
+   * ============================== */
+  const [isExhibitionMode, setIsExhibitionMode] = useState(false); // 전시회 생성 모드 여부
+  const [title, setTitle] = useState(""); // 제목
+  const [desc, setDesc] = useState(""); // 설명
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // 실제 업로드할 파일
+  const [previews, setPreviews] = useState<string[]>([]); // 미리보기 URL
+  const [loading, setLoading] = useState(false); // 업로드 중 여부
 
+  /* ==============================
+   * 3️⃣ 파일 선택 관련 로직
+   * ============================== */
+
+  // 커스텀 버튼 클릭 → 숨겨진 file input 클릭
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
+  // 파일 선택 시 실행
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      const fileArray = Array.from(files);
-      setSelectedFiles((prev) => [...prev, ...fileArray]);
-      const newPreviewUrls = fileArray.map((file) => URL.createObjectURL(file));
-      setPreviews((prev) => [...prev, ...newPreviewUrls]);
-      e.target.value = "";
-    }
+    if (!files) return;
+
+    // FileList → 배열로 변환
+    const fileArray = Array.from(files);
+
+    // 기존 파일에 누적
+    setSelectedFiles((prev) => [...prev, ...fileArray]);
+
+    // 미리보기 URL 생성
+    const newPreviewUrls = fileArray.map((file) => URL.createObjectURL(file));
+    setPreviews((prev) => [...prev, ...newPreviewUrls]);
+
+    // 같은 파일 다시 선택 가능하도록 초기화
+    e.target.value = "";
   };
 
+  // 특정 파일 제거
   const handleRemoveFile = (index: number) => {
+    // 미리보기 URL 메모리 해제
     URL.revokeObjectURL(previews[index]);
+
+    // 파일 / 미리보기 동기화 제거
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // 컴포넌트 언마운트 시 모든 미리보기 URL 정리 (메모리 누수 방지)
   useEffect(() => {
     return () => {
       previews.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
 
+  /* ==============================
+   * 4️⃣ 제출(업로드) 전체 흐름
+   * ============================== */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedFiles.length === 0) return alert("사진을 최소 1장 선택해주세요.");
+
+    // 기본 검증
+    if (selectedFiles.length === 0) {
+      alert("사진을 최소 1장 선택해주세요.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       let exhibitionId = null;
+
+      /* ------------------------------
+       * 4-1️⃣ 전시회 생성 (선택적)
+       * ------------------------------ */
       if (isExhibitionMode) {
         const exhibitionRes = await authFetch(`${BASE_URL}/exhibition/create`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, contents: desc, template: "default" }),
+          body: JSON.stringify({
+            title,
+            contents: desc,
+            template: "default",
+          }),
         });
-        if (!exhibitionRes.ok) throw new Error("전시회 생성 실패");
+
+        if (!exhibitionRes.ok) {
+          throw new Error("전시회 생성 실패");
+        }
+
+        // 생성된 전시회 ID 확보
         const exhibitionData = await exhibitionRes.json();
         exhibitionId = exhibitionData.exhibitionId;
       }
 
+      /* ------------------------------
+       * 4-2️⃣ 사진 업로드
+       * ------------------------------ */
       const formData = new FormData();
-      const photoDto = JSON.stringify({ exhibitionId, title, description: desc });
+
+      // JSON DTO를 Blob으로 추가 (Spring @RequestPart 대응)
+      const photoDto = JSON.stringify({
+        exhibitionId,
+        title,
+        description: desc,
+      });
       formData.append("dto", new Blob([photoDto], { type: "application/json" }));
+
+      // 이미지 파일들 추가
       selectedFiles.forEach((file) => formData.append("image", file));
 
       const photoRes = await authFetch(`${BASE_URL}/photo/upload`, {
         method: "POST",
         body: formData,
       });
-      if (!photoRes.ok) throw new Error("사진 업로드 실패");
 
+      if (!photoRes.ok) {
+        throw new Error("사진 업로드 실패");
+      }
+
+      /* ------------------------------
+       * 4-3️⃣ 성공 처리
+       * ------------------------------ */
       alert(isExhibitionMode ? "전시회가 개최되었습니다!" : "사진 업로드가 완료되었습니다!");
       router.push("/");
     } catch (error) {
