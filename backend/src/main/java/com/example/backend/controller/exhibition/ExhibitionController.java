@@ -1,6 +1,7 @@
 package com.example.backend.controller.exhibition;
 
 import com.example.backend.dto.request.ExhibitionRequestDTO;
+import com.example.backend.dto.response.ExhibitionListResponseDTO;
 import com.example.backend.dto.response.ExhibitionResponseDTO;
 import com.example.backend.service.exhibition.ExhibitionService;
 import lombok.RequiredArgsConstructor;
@@ -57,8 +58,8 @@ public class ExhibitionController {
      * 자신 전시회 조회
      */
     @GetMapping(value = "/my")
-    public ResponseEntity<List<ExhibitionResponseDTO>> getMyExhibition() {
-        List<ExhibitionResponseDTO> exhibition = exhibitionService.getMyExhibition();
+    public ResponseEntity<List<ExhibitionListResponseDTO>> getMyExhibition() {
+        List<ExhibitionListResponseDTO> exhibition = exhibitionService.getMyExhibition();
         return ResponseEntity.status(200).body(exhibition);
     }
 

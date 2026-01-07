@@ -14,6 +14,17 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
 
     List<Exhibition> findByUserOrderByCreatedAtDesc(Users user);
 
+    // FETCH JOIN을 사용하여 사용자의 전시회와 사진을 한 번에 조회
+    // DISTINCT를 사용하여 사진 개수만큼 전시회 데이터가 중복되는 것을 방지합니다.
+    @Query("""
+            SELECT DISTINCT e 
+            FROM Exhibition e 
+            LEFT JOIN FETCH e.photos 
+            WHERE e.user = :user 
+            ORDER BY e.createdAt DESC
+            """)
+    List<Exhibition> findByUserWithPhotosOrderByCreatedAtDesc(@Param("user") Users user);
+
 
     @Query("""
             SELECT e 

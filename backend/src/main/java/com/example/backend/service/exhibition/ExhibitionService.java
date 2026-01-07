@@ -3,6 +3,7 @@ package com.example.backend.service.exhibition;
 import com.example.backend.domain.Exhibition;
 import com.example.backend.domain.Users;
 import com.example.backend.dto.request.ExhibitionRequestDTO;
+import com.example.backend.dto.response.ExhibitionListResponseDTO;
 import com.example.backend.dto.response.ExhibitionResponseDTO;
 import com.example.backend.dto.response.TemplateResponseDTO;
 import com.example.backend.repository.ExhibitionRepository;
@@ -93,17 +94,17 @@ public class ExhibitionService {
      * 유효성 검증후 자기자신 전시회 전체 목록 불러옴
      */
     @Transactional(readOnly = true)
-    public List<ExhibitionResponseDTO> getMyExhibition() {
+    public List<ExhibitionListResponseDTO> getMyExhibition() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Exhibition> exhibitions = exhibitionRepository.findByUserOrderByCreatedAtDesc(user);
+        List<Exhibition> exhibitions = exhibitionRepository.findByUserWithPhotosOrderByCreatedAtDesc(user);
         log.info("Exhibition Service, getMyExhibition - exhibitions : {}", exhibitions);
 
         return exhibitions.stream()
-                .map(ExhibitionResponseDTO::fromEntity).toList();
+                .map(ExhibitionListResponseDTO::fromEntity).toList();
     }
 
     /**

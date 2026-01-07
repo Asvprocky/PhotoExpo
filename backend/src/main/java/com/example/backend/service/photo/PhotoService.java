@@ -90,7 +90,7 @@ public class PhotoService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        List<Photo> photos = photoRepository.findByUser(user);
+        List<Photo> photos = photoRepository.findByUserAndExhibitionIsNullOrderByCreatedAtDesc(user);
 
         // photosEntity -> PhotoResponseDTO 로 사용자에게 필요한 값으로 변환
         return photos.stream()
@@ -102,15 +102,16 @@ public class PhotoService {
     /**
      * 모든 사진 조회
      * 조회시 인기순과 최신순
+     * 전시회에 포함돼있지 않은 사진만 모두 조회
      */
     @Transactional(readOnly = true)
     public List<PhotoResponseDTO> getAllPhotos(String sort) {
         List<Photo> photos;
 
         if ("popular".equals(sort)) {
-            photos = photoRepository.findAllByOrderByPhotoViewCountDesc();
+            photos = photoRepository.findByExhibitionIsNullOrderByPhotoViewCountDesc();
         } else {
-            photos = photoRepository.findAllByOrderByCreatedAtDesc();
+            photos = photoRepository.findByExhibitionIsNullOrderByCreatedAtDesc();
         }
         return photos.stream()
                 .map(PhotoResponseDTO::fromEntity)

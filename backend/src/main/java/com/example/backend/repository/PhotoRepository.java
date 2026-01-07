@@ -7,11 +7,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
-    List<Photo> findByUser(Users user);
+    List<Photo> findByUserAndExhibitionIsNullOrderByCreatedAtDesc(Users user);
 
-    List<Photo> findByExhibition_ExhibitionId(Long exhibitionId);
-    
+
     List<Photo> findAllByOrderByPhotoViewCountDesc();
 
     List<Photo> findAllByOrderByCreatedAtDesc();
+
+    // 최신순 + 전시 없는 사진
+    List<Photo> findByExhibitionIsNullOrderByCreatedAtDesc();
+
+    // 인기순 + 전시 없는 사진
+    List<Photo> findByExhibitionIsNullOrderByPhotoViewCountDesc();
 }
