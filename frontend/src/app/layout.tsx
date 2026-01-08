@@ -23,18 +23,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  modal, // 1. 반드시 modal 프롭을 추가해야 합니다.
+  modal,
 }: {
   children: React.ReactNode;
-  modal: React.ReactNode; // 2. 타입 정의도 잊지 마세요.
+  modal?: React.ReactNode; //  optional
 }) {
   return (
     <html>
       <body>
         <Navbar />
-        <main className="pt-14">
+        <main className="pt-14 relative">
           {children}
-          {/* 3. children과 같은 레벨에 modal을 배치합니다. */}
           {modal}
         </main>
       </body>

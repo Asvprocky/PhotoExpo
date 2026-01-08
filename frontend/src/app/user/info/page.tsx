@@ -114,7 +114,7 @@ export default function UserInfoPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* 1. 상단 배너 */}
-      <div className="relative h-[280px] w-full bg-gray-200">
+      <div className="relative h-[280px] w-full bg-gray-200 -mt-14">
         <Image src="/photoExpoBanner.jpg" alt="Wide Cover" fill className="object-cover" />
         <div className="absolute inset-0 bg-black/10" />
       </div>
@@ -123,7 +123,7 @@ export default function UserInfoPage() {
         <div className="flex flex-col md:flex-row gap-12">
           {/* 2. 좌측 프로필 */}
           <div className="w-full md:w-[350px] -mt-16 z-10">
-            <div className="w-40 h-40 rounded-full border-[6px] border-white overflow-hidden shadow-md mb-6 bg-white relative">
+            <div className="w-25 h-25 rounded-full border-[6px] border-white overflow-hidden shadow-md mb-6 bg-white relative">
               <Image
                 src="/photoExpo_Profile_Image.jpg"
                 alt="Profile"
@@ -131,7 +131,7 @@ export default function UserInfoPage() {
                 className="object-cover"
               />
             </div>
-            <h1 className="text-4xl font-black text-gray-900 mb-2">{userInfo?.nickname}</h1>
+            <h1 className="text-2xl font-black text-gray-900 mb-2">{userInfo?.nickname}</h1>
             <div className="space-y-4 text-sm font-bold text-gray-600">
               <div className="flex items-center gap-2">✉️ {userInfo?.email}</div>
               <div className="flex items-center gap-2">👤 {userInfo?.username}</div>

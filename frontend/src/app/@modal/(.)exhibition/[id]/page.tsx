@@ -4,8 +4,8 @@ import Modal from "@/components/modal";
 export default async function ExhibitionModalPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Modal>
-      {/* 기존에 만드신 ExhibitionDetail 컴포넌트를 그대로 렌더링합니다. 
-        만약 ExhibitionDetail이 서버 컴포넌트라면 params를 그대로 전달하세요.
+      {/* 기존에 만든 ExhibitionDetail 컴포넌트를 그대로 렌더링. 
+        만약 ExhibitionDetail이 서버 컴포넌트라면 params를 그대로 전달.
       */}
       <ExhibitionDetail params={params} />
     </Modal>

@@ -12,35 +12,48 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // 마이페이지 여부 확인
-  const isMyPage = pathname === "/user/info";
+  // 1. 투명화가 적용될 페이지 조건 (마이페이지)
+  const isMyPage = pathname.startsWith("/user/info");
 
   useEffect(() => {
-    setMounted(true); // 브라우저 마운트 완료
-    const token = localStorage.getItem("accessToken");
-    setIsLoggedIn(!!token);
+    // 1 클라이언트 마운트 완료
+    setMounted(true);
 
+    // 2 로그인 상태 즉시 확인
+    setIsLoggedIn(!!localStorage.getItem("accessToken"));
+
+    // 3 중요: 현재 스크롤 위치 즉시 반영
+    setIsScrolled(window.scrollY > 50);
+
+    // 4 스크롤 이벤트 리스너
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // 5 클린업
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, [pathname]);
 
-  // 하이드레이션 에러 방지: 서버와 클라이언트의 첫 렌더링 결과(HTML)를 일치시킵니다.
-  // 마운트 전에는 투명 모드를 비활성화하여 서버의 기본 HTML과 맞춥니다.
-  const isTransparent = mounted && isMyPage && !isScrolled;
+  // 하이드레이션 에러 방지 (클라이언트 마운트 전에는 렌더링하지 않음)
+  if (!mounted) return null;
+
+  // 2. 최종 투명 여부 결정: 마이페이지이면서 + 스크롤이 위쪽에 있을 때만 투명
+  const isTransparent = isMyPage && !isScrolled;
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 flex items-center justify-between px-10 h-14 transition-all duration-300 ${
+      className={`fixed top-0 left-0 w-full z-50 flex items-center justify-between px-10 h-14 transition-all duration-500 ${
         isTransparent
-          ? "bg-transparent border-none shadow-none"
-          : "bg-white border-b border-gray-100 shadow-sm"
+          ? "bg-transparent border-none shadow-none" // 투명 상태
+          : "bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm" // 불투명 상태 (약간의 블러 효과 추가)
       }`}
     >
-      {/* --- 1. 왼쪽 영역 (로고) --- */}
-      <div className="flex items-center gap-6">
+      {/* --- 왼쪽: 로고 --- */}
+      <div className="flex items-center">
         <Link href="/">
           <Image
             src="/PhotoExpoLogo2.png"
@@ -48,59 +61,51 @@ export default function Navbar() {
             width={144}
             height={30}
             priority
-            className={isTransparent ? "brightness-0 invert" : ""}
+            // 투명할 때는 로고를 흰색으로 반전 (로고가 검은색일 경우)
+            className={`transition-all duration-300 ${isTransparent ? "brightness-0 invert" : ""}`}
           />
         </Link>
       </div>
 
-      {/* --- 2. 중앙 영역 (메뉴) --- */}
+      {/* --- 중앙: 메뉴 --- */}
       <div
-        className={`absolute left-1/2 transform -translate-x-1/2 flex gap-8 text-base font-bold tracking-tight transition-colors ${
-          isTransparent ? "text-white" : "text-gray-700"
+        className={`absolute left-1/2 -translate-x-1/2 flex gap-8 font-bold transition-colors duration-300 ${
+          isTransparent ? "text-white" : "text-gray-700 hover:text-black"
         }`}
       >
-        <Link href="/exhibition" className="hover:opacity-70">
-          Exhibition
-        </Link>
+        <Link href="/exhibition">Exhibition</Link>
       </div>
 
-      {/* --- 3. 오른쪽 영역 (전시 제작 + 유저 메뉴) --- */}
-      <div className="flex items-center justify-end min-w-[250px] gap-4">
-        {/* 태그 구조의 일치(Hydration)를 위해 항상 같은 부모 div를 유지합니다. */}
-        <div
-          className={`flex items-center gap-4 transition-opacity duration-300 ${
-            mounted ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {/* 전시 제작 버튼: 가로채기 라우트 방지를 위해 @modal/exhibition/create 설정을 확인하세요. */}
+      {/* --- 오른쪽: 버튼 세트 --- */}
+      <div className="flex items-center gap-4">
+        {isLoggedIn && (
           <Link
             href="/exhibition/create"
-            replace={true}
-            className={`text-xs font-black px-4 py-1.5 rounded-full transition-all ${
+            className={`text-xs font-black px-4 py-1.5 rounded-full transition-all duration-300 ${
               isTransparent
-                ? "bg-white text-black hover:bg-gray-200"
-                : "bg-black text-white hover:bg-gray-800"
+                ? "bg-white text-black hover:bg-gray-200" // 투명할 땐 흰색 버튼
+                : "bg-black text-white hover:bg-gray-800" // 불투명할 땐 검은색 버튼
             }`}
           >
             전시 제작
           </Link>
+        )}
 
-          {/* 로그인 상태에 따른 버튼 처리 */}
-          {!isLoggedIn ? (
-            <Link
-              href="/login"
-              className={`flex items-center justify-center px-8 h-10 border-2 rounded-full transition-all font-black ${
-                isTransparent
-                  ? "text-white border-white hover:bg-white/10"
-                  : "text-blue-600 border-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              로그인
-            </Link>
-          ) : (
-            <ProfileDropdown />
-          )}
-        </div>
+        {!isLoggedIn ? (
+          <Link
+            href="/login"
+            className={`px-8 h-10 flex items-center rounded-full border-2 font-black transition-all duration-300 ${
+              isTransparent
+                ? "text-white border-white hover:bg-white/10"
+                : "text-blue-600 border-blue-600 hover:bg-blue-50"
+            }`}
+          >
+            로그인
+          </Link>
+        ) : (
+          <ProfileDropdown />
+          /* ProfileDropdown 내부 아이콘 색상 조절을 위해 props 전달 권장 */
+        )}
       </div>
     </nav>
   );

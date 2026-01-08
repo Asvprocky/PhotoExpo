@@ -47,7 +47,11 @@ export default async function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {exhibitions.slice(0, 6).map((ex: any, index: number) => (
-            <Link key={ex.exhibitionId} href={`/exhibition/${ex.exhibitionId}`}>
+            <Link
+              key={ex.exhibitionId}
+              href={`/exhibition/${ex.exhibitionId}`}
+              as={`/exhibition/${ex.exhibitionId}`}
+            >
               {/* group 클래스로 호버 상태 감지 */}
               <div className="group cursor-pointer relative aspect-[16/10] overflow-hidden rounded-none border border-gray-50 bg-gray-50">
                 {ex.photos?.[0] && (
@@ -83,7 +87,11 @@ export default async function Home() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
           {photos.map((photo: any) => (
-            <Link key={photo.photoId} href={`/photo/${photo.photoId}`}>
+            <Link
+              key={photo.photoId}
+              href={`/photo/${photo.photoId}`}
+              as={`/photo/${photo.photoId}`}
+            >
               <div className="group relative aspect-square overflow-hidden rounded-none bg-gray-100 border border-gray-50">
                 <Image
                   src={photo.imageUrl}
