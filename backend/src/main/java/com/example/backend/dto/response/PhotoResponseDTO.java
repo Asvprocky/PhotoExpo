@@ -13,7 +13,15 @@ public record PhotoResponseDTO(
         LocalDateTime createdAt,
         Long photoViewCount,
         Long userId,
-        Long exhibitionId) {
+        Long exhibitionId,
+        UserSimpleDTO userSimpleDTO) {
+
+    public record UserSimpleDTO(
+            Long userId,
+            String nickname,
+            String email
+    ) {
+    }
 
     public static PhotoResponseDTO fromEntity(Photo photo) {
         return new PhotoResponseDTO(
@@ -25,7 +33,12 @@ public record PhotoResponseDTO(
                 photo.getCreatedAt(),
                 photo.getPhotoViewCount(),
                 photo.getUser().getUserId(),
-                photo.getExhibition() == null ? null : photo.getExhibition().getExhibitionId()
+                photo.getExhibition() == null ? null : photo.getExhibition().getExhibitionId(),
+                new UserSimpleDTO(
+                        photo.getUser().getUserId(),
+                        photo.getUser().getNickname(),
+                        photo.getUser().getEmail()
+                )
         );
     }
 }
