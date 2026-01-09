@@ -87,7 +87,7 @@ export default function JoinPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] bg-white px-4">
       <div className="w-full max-w-[400px] space-y-8">
-        {/* 헤더: 로그인 페이지와 100% 동일 */}
+        {/* 헤더: 로그인 페이지와 동일 */}
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">회원가입</h1>
           <p className="mt-2 text-sm text-gray-600">PhotoExpo의 새로운 멤버가 되어보세요.</p>

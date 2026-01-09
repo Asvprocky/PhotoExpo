@@ -80,7 +80,7 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {isLoggedIn && (
           <Link
-            href="/exhibition/create"
+            href="/create"
             className={`text-xs font-black px-4 py-1.5 rounded-full transition-all duration-300 ${
               isTransparent
                 ? "bg-white text-black hover:bg-gray-200" // 투명할 땐 흰색 버튼

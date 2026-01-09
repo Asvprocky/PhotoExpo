@@ -19,7 +19,7 @@ interface Exhibition {
 
 interface Photo {
   photoId: number;
-  photoId_real?: number; // 삭제를 위한 실제 ID (필요시)
+  photoId_real?: number;
   imageUrl: string;
   title?: string;
 }
@@ -30,57 +30,65 @@ export default function UserInfoPage() {
   const [activeTab, setActiveTab] = useState("전시");
   const [myExhibitions, setMyExhibitions] = useState<Exhibition[]>([]);
   const [myPhotos, setMyPhotos] = useState<Photo[]>([]);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
+
     if (!accessToken) {
       router.replace("/login");
       return;
     }
 
-    // 데이터 가져오기 로직 (생략 - 기존과 동일)
-    fetchData(accessToken);
+    const fetchData = async () => {
+      try {
+        // 유저 정보
+        const userRes = await fetch("http://localhost:8080/user/info", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!userRes.ok) throw new Error("로그인 만료");
+        const userData = await userRes.json();
+        setUserInfo(userData.data ?? userData);
+
+        // 전시 정보
+        const exRes = await fetch("http://localhost:8080/exhibition/my", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!exRes.ok) throw new Error("로그인 만료");
+        const exData = await exRes.json();
+        setMyExhibitions(exData ?? []);
+
+        // 사진 정보
+        const phRes = await fetch("http://localhost:8080/photo/my", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!phRes.ok) throw new Error("로그인 만료");
+        const phData = await phRes.json();
+        setMyPhotos(phData ?? []);
+
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        localStorage.removeItem("accessToken"); // 토큰 제거
+        router.replace("/login"); // 로그인 페이지로 이동
+      }
+    };
+
+    fetchData();
   }, [router]);
 
-  const fetchData = async (token: string) => {
-    try {
-      // 유저 정보
-      const userRes = await fetch("http://localhost:8080/user/info", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const userData = await userRes.json();
-      setUserInfo(userData.data ?? userData);
-
-      // 전시 정보
-      const exRes = await fetch("http://localhost:8080/exhibition/my", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const exData = await exRes.json();
-      setMyExhibitions(exData.data ?? exData);
-
-      // 사진 정보
-      const phRes = await fetch("http://localhost:8080/photo/my", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const phData = await phRes.json();
-      setMyPhotos(phData.data ?? phData);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // --- 삭제 핸들러 ---
+  // 삭제 핸들러
   const handleDeleteExhibition = async (e: React.MouseEvent, id: number) => {
     e.preventDefault();
-    e.stopPropagation(); // Link 클릭 이벤트 전파 방지
-
+    e.stopPropagation();
     if (!confirm("이 전시회를 삭제하시겠습니까?")) return;
 
-    const accessToken = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
     const res = await fetch(`http://localhost:8080/exhibition/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (res.ok) {
@@ -92,13 +100,14 @@ export default function UserInfoPage() {
   const handleDeletePhoto = async (e: React.MouseEvent, id: number) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (!confirm("이 사진을 삭제하시겠습니까?")) return;
 
-    const accessToken = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
     const res = await fetch(`http://localhost:8080/photo/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (res.ok) {
@@ -107,13 +116,13 @@ export default function UserInfoPage() {
     }
   };
 
-  if (!userInfo && !error) {
+  if (loading) {
     return <div className="min-h-screen flex items-center justify-center">로딩 중...</div>;
   }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 1. 상단 배너 */}
+      {/* 상단 배너 */}
       <div className="relative h-[280px] w-full bg-gray-200 -mt-14">
         <Image src="/photoExpoBanner.jpg" alt="Wide Cover" fill className="object-cover" />
         <div className="absolute inset-0 bg-black/10" />
@@ -121,7 +130,7 @@ export default function UserInfoPage() {
 
       <div className="max-w-[1400px] mx-auto px-10 relative">
         <div className="flex flex-col md:flex-row gap-12">
-          {/* 2. 좌측 프로필 */}
+          {/* 좌측 프로필 */}
           <div className="w-full md:w-[350px] -mt-16 z-10">
             <div className="w-25 h-25 rounded-full border-[6px] border-white overflow-hidden shadow-md mb-6 bg-white relative">
               <Image
@@ -141,7 +150,7 @@ export default function UserInfoPage() {
             </button>
           </div>
 
-          {/* 3. 우측 콘텐츠 영역 */}
+          {/* 우측 콘텐츠 영역 */}
           <div className="flex-1 py-10">
             {/* 탭 메뉴 */}
             <div className="flex gap-10 border-b border-gray-100 mb-8">
@@ -160,7 +169,7 @@ export default function UserInfoPage() {
               ))}
             </div>
 
-            {/* 탭 내용 분기 처리 */}
+            {/* 탭 내용 */}
             {activeTab === "전시" ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {myExhibitions.map((ex) => (
@@ -177,8 +186,6 @@ export default function UserInfoPage() {
                         className="object-cover transition-all group-hover:scale-105"
                       />
                     )}
-
-                    {/* 호버 시 나타나는 오버레이 (제목 + 삭제 버튼) */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4">
                       <div className="flex justify-end">
                         <button
@@ -194,7 +201,6 @@ export default function UserInfoPage() {
                 ))}
               </div>
             ) : (
-              /* 사진 탭 */
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {myPhotos.map((photo) => (
                   <div
@@ -208,8 +214,6 @@ export default function UserInfoPage() {
                       fill
                       className="object-cover transition-all group-hover:scale-110"
                     />
-
-                    {/* 호버 오버레이 */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
                       <div className="flex justify-end">
                         <button

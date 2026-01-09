@@ -13,44 +13,66 @@ export interface JoinRequest {
  * [인증이 필요한 요청용]
  * 모든 요청에 accessToken을 붙이고, 만료 시 자동으로 갱신.
  */
+
 export async function authFetch(url: string, options: RequestInit = {}) {
   const accessToken = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-  const res = await fetch(url, {
+  // 1. 헤더 구성
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+    Authorization: `Bearer ${accessToken}`,
+  };
+
+  // ✅ 중요: body가 FormData가 아닐 때만 Content-Type을 application/json으로 설정
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  let res = await fetch(url, {
     ...options,
-    credentials: "include", // refreshToken 쿠키 전송
-    headers: {
-      ...(options.headers || {}),
-      Authorization: `Bearer ${accessToken}`,
-    },
+    credentials: "include",
+    headers,
   });
 
-  // accessToken 만료 처리 (401 Unauthorized)
+  // 2. accessToken 만료 처리 (401 Unauthorized)
   if (res.status === 401) {
+    console.log("토큰 만료 혹은 인증 실패, 갱신 시도 중...");
+
     const refreshRes = await fetch(`${BASE_URL}/jwt/refresh`, {
       method: "POST",
-      credentials: "include",
+      credentials: "include", // refreshToken 쿠키 전송
     });
 
     if (!refreshRes.ok) {
       if (typeof window !== "undefined") {
+        console.error("리프레시 토큰 만료. 로그아웃 처리합니다.");
         localStorage.removeItem("accessToken");
         window.location.href = "/login";
       }
       throw new Error("인증 만료");
     }
 
-    const { accessToken: newAccessToken } = await refreshRes.json(); // 반환 한 JWTResponseDTO 안에있는 accessToken 값만 뽑아서 사용
+    // 새 토큰 저장
+    const { accessToken: newAccessToken } = await refreshRes.json();
     localStorage.setItem("accessToken", newAccessToken);
 
-    // 원래 요청 재시도
+    // 3. 원래 요청 재시도 (헤더 최신화)
+    console.log("새 토큰으로 요청을 재시도합니다.");
+
+    const retryHeaders: Record<string, string> = {
+      ...(options.headers as Record<string, string>),
+      Authorization: `Bearer ${newAccessToken}`,
+    };
+
+    // 재시도 시에도 FormData 여부 체크
+    if (!(options.body instanceof FormData)) {
+      retryHeaders["Content-Type"] = "application/json";
+    }
+
     return fetch(url, {
       ...options,
       credentials: "include",
-      headers: {
-        ...(options.headers || {}),
-        Authorization: `Bearer ${newAccessToken}`,
-      },
+      headers: retryHeaders,
     });
   }
 
