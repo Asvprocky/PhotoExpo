@@ -38,5 +38,6 @@ export const TEMPLATE_CONFIG: Record<string, TemplateStyle> = {
     padding: "p-12",
     titleSize: "text-4xl",
   },
+
   // 나중에 여기에 'modern', 'art' 등을 추가하기만 하면 끝!
 };

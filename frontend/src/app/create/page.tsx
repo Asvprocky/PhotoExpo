@@ -218,23 +218,62 @@ export default function UnifiedUploadPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedFiles.length === 0) return alert("사진을 추가해주세요.");
+
     setLoading(true);
     try {
+      let exhibitionId = null;
+
+      // 1. 모든 텍스트 데이터를 JSON 문자열로 변환 (상세 페이지 재현용)
       const allContents = JSON.stringify(descMap);
+
+      // 2. 전시회 모드일 경우 전시회 먼저 생성하여 ID 확보
       if (isExhibitionMode) {
-        await authFetch(`${BASE_URL}/exhibition/create`, {
+        const exhibitionRes = await authFetch(`${BASE_URL}/exhibition/create`, {
           method: "POST",
           body: JSON.stringify({ title, contents: allContents, template }),
         });
+
+        if (!exhibitionRes.ok) throw new Error("전시회 생성 실패");
+
+        const data = await exhibitionRes.json();
+        exhibitionId = data.exhibitionId;
       }
+
+      // 3. 사진 업로드를 위한 FormData 준비
+      const formData = new FormData();
+
+      // 현재 descMap이 { 인덱스: [{text, align}, ...] } 구조이므로 모든 텍스트를 합침
+      const combinedDesc = Object.values(descMap)
+        .flatMap((list) => list.map((v) => v.text))
+        .join("\n");
+
+      const photoDto = JSON.stringify({
+        exhibitionId,
+        title,
+        description: combinedDesc,
+      });
+
+      // DTO와 파일들을 FormData에 추가
+      formData.append("dto", new Blob([photoDto], { type: "application/json" }));
+      selectedFiles.forEach((file) => formData.append("image", file));
+
+      // 4. 실제 사진 업로드 요청 (이 부분이 빠져있었습니다!)
+      const photoRes = await authFetch(`${BASE_URL}/photo/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!photoRes.ok) throw new Error("사진 업로드 실패");
+
+      alert("전시회가 성공적으로 개최되었습니다!");
       router.push("/");
     } catch (error) {
-      alert("등록 오류");
+      console.error(error);
+      alert("등록 중 오류 발생");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="pt-5 pb-20 min-h-screen bg-gray-100 font-bold">
       <div className="max-w-[1400px] mx-auto px-6 flex md:flex-col lg:flex-row gap-8">
