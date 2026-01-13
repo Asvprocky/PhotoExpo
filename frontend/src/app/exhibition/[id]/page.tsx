@@ -1,9 +1,14 @@
+import { TEMPLATE_CONFIG } from "@/app/constants/templates";
 import React from "react";
 
-// 타입 정의
 interface Photo {
   photoId: number;
   imageUrl: string;
+}
+
+interface DescriptionItem {
+  text: string;
+  align: string;
 }
 
 interface ExhibitionDetailData {
@@ -13,8 +18,37 @@ interface ExhibitionDetailData {
   userEmail: string;
   userId: number;
   exhibitionViewCount: number;
+  template: string;
   photos?: Photo[];
 }
+
+/* ==============================
+ * 텍스트 블록 (미리보기와 동일)
+ * ============================== */
+const DescriptionDisplay = ({
+  items,
+  currentStyle,
+}: {
+  items?: DescriptionItem[];
+  currentStyle: any;
+}) => {
+  if (!items || items.length === 0) return null;
+
+  return (
+    <>
+      {items.map((item, idx) => (
+        <div
+          key={idx}
+          className={`w-full py-6 px-10 ${item.align}
+          ${currentStyle.font} ${currentStyle.fontColor}
+          text-lg md:text-xl leading-relaxed whitespace-pre-wrap font-bold`}
+        >
+          {item.text}
+        </div>
+      ))}
+    </>
+  );
+};
 
 export default async function ExhibitionDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -38,59 +72,59 @@ export default async function ExhibitionDetail({ params }: { params: Promise<{ i
     errorMsg = "서버와 연결할 수 없습니다.";
   }
 
-  if (errorMsg) {
+  if (errorMsg || !data) {
     return (
-      <div className="py-20 text-center text-red-500 font-bold">
-        <h2>오류 발생</h2>
-        <p>{errorMsg}</p>
+      <div className="py-20 text-center font-bold text-red-500">
+        <h2>{errorMsg || "데이터가 없습니다."}</h2>
       </div>
     );
   }
 
-  if (!data) {
-    return <div className="py-20 text-center font-bold">데이터가 없습니다.</div>;
+  /* ==============================
+   * 데이터 파싱
+   * ============================== */
+  let descMap: Record<number, DescriptionItem[]> = {};
+  try {
+    descMap = JSON.parse(data.contents);
+  } catch {
+    descMap = { 0: [{ text: data.contents, align: "text-center" }] };
   }
 
   const photoList = data.photos ?? [];
+  const templateKey = data.template || "default";
+  const currentStyle = TEMPLATE_CONFIG[templateKey] || TEMPLATE_CONFIG.default;
+  console.log("raw template from server:", data.template);
+  console.log("available keys:", Object.keys(TEMPLATE_CONFIG));
 
+  /* ==============================
+   * 미리보기와 동일한 렌더링
+   * ============================== */
   return (
-    <div className="bg-white">
-      {/* 1. 상단 헤더 */}
-      <div className="bg-[#191919] text-white pt-24 pb-16 px-10 text-center">
-        <h1 className="text-5xl font-black mb-4 tracking-tighter uppercase">{data.title}</h1>
-        <p className="text-gray-400 text-xs font-medium tracking-[0.3em] uppercase">
-          Exhibition No. {id} | View {data.exhibitionViewCount}
-        </p>
-      </div>
+    <div className={`w-full transition-all duration-500 ${currentStyle.container}`}>
+      <div
+        className={`w-full h-full overflow-y-auto transition-all duration-500 ${currentStyle.padding}`}
+      >
+        {/* 0번 텍스트 */}
+        <DescriptionDisplay items={descMap[0]} currentStyle={currentStyle} />
 
-      {/* 2. 설명 영역 */}
-      <div className="max-w-4xl mx-auto px-10 py-16">
-        <div className="flex items-center gap-4 mb-10 border-b border-gray-100 pb-8">
-          <div className="w-12 h-12 bg-gray-200 rounded-full" />
-          <div>
-            <p className="text-sm text-gray-400 font-bold uppercase tracking-wider">Created by</p>
-            <p className="text-lg font-black text-gray-900">{data.userEmail}</p>
-          </div>
-        </div>
+        {/* 이미지 + 텍스트 반복 */}
+        {photoList.map((photo, idx) => (
+          <div key={photo.photoId} className="flex flex-col items-center">
+            <div className="w-full flex justify-center items-center px-10">
+              <img
+                src={photo.imageUrl}
+                alt={`photo-${idx}`}
+                className={`transition-all duration-700 shadow-md ${currentStyle.imageLayout}`}
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+              />
+            </div>
 
-        <div className="text-lg leading-relaxed text-gray-700 font-medium whitespace-pre-wrap">
-          {data.contents}
-        </div>
-      </div>
-
-      {/* 3. 이미지 리스트 */}
-      <div className="flex flex-col gap-10 pb-20">
-        {photoList.map((photo) => (
-          <div key={photo.photoId} className="w-full bg-gray-50 flex justify-center">
-            <img
-              src={photo.imageUrl}
-              alt="Exhibition Artwork"
-              className="max-w-full h-auto shadow-lg"
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-            />
+            <DescriptionDisplay items={descMap[idx + 1]} currentStyle={currentStyle} />
           </div>
         ))}
+
+        <div className="h-5" />
       </div>
     </div>
   );

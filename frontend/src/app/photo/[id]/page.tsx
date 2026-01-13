@@ -70,7 +70,7 @@ export default async function PhotoDetailPage({ params }: { params: Promise<{ id
           <p className="text-lg font-black text-gray-900">{data.nickname || data.userEmail}</p>
 
           <div className="text-lg leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
-            {data.description || "상세 설명이 없습니다."}
+            {data.description}
           </div>
         </div>
       </div>

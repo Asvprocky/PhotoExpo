@@ -8,6 +8,7 @@ export default async function PhotoModalPage({ params }: { params: Promise<{ id:
   const data = json.data || json;
   // json 전체를 찍어서 user 객체가 들어있는지 확인
   // console.log("Full JSON Response:", JSON.stringify(json, null, 2));
+  console.log(data);
 
   return (
     <Modal title={data.title} user={data.userSimpleDTO}>

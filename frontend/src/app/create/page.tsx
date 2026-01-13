@@ -7,7 +7,7 @@ import { TEMPLATE_CONFIG } from "../constants/templates";
 
 const BASE_URL = "http://localhost:8080";
 
-/* ==============================
+/* ==============================ㅈ
  * 외부 컴포넌트: 개별 설명 블록
  * ============================== */
 const DescriptionBlock = ({ index, subIndex, data, onUpdate, onRemove, currentStyle }: any) => {
@@ -32,7 +32,7 @@ const DescriptionBlock = ({ index, subIndex, data, onUpdate, onRemove, currentSt
           ${currentStyle.font} ${currentStyle.fontColor} ${data.align}
           text-lg md:text-xl leading-relaxed min-h-[40px] focus:ring-0`}
       />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover/desc:opacity-100 transition-all bg-black/80 p-1.5 rounded-full border border-white/20 z-20">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-6 flex gap-2 opacity-0 group-hover/desc:opacity-100 transition-all bg-black/80 p-1.5 rounded-full border border-white/20 z-20">
         <button
           type="button"
           onClick={() => onUpdate(index, subIndex, { ...data, align: "text-left" })}
@@ -116,6 +116,13 @@ export default function UnifiedUploadPage() {
 
   const currentStyle = TEMPLATE_CONFIG[template] || TEMPLATE_CONFIG.default;
 
+  // 모드 해제 시 기본값으로
+  useEffect(() => {
+    if (!isExhibitionMode) {
+      setTemplate("default");
+    }
+  }, [isExhibitionMode]);
+
   const handlePhotoAddClick = (index: number) => {
     insertTargetRef.current = index;
     fileInputRef.current?.click();
@@ -127,6 +134,25 @@ export default function UnifiedUploadPage() {
 
     const fileArray = Array.from(files);
     const newPreviewUrls = fileArray.map((f) => URL.createObjectURL(f));
+    // --- [수정된 유효성 로직] ---
+    if (!isExhibitionMode) {
+      // 1. 애초에 여러 장을 선택해서 가져온 경우
+      if (fileArray.length > 1) {
+        alert("일반 사진 모드에서는 1장의 사진만 올릴 수 있습니다.");
+        e.target.value = "";
+        return;
+      }
+
+      // 2. 이미 사진이 있는데 또 올리려고 하는 경우 (사이드바, InsertZone 모두 포함)
+      if (selectedFiles.length >= 1) {
+        alert(
+          "일반 모드에서는 사진을 더 추가할 수 없습니다. 기존 사진을 삭제하거나 전시회 모드를 켜주세요."
+        );
+        e.target.value = "";
+        insertTargetRef.current = null; // 타겟 초기화
+        return;
+      }
+    }
     const targetIdx = insertTargetRef.current;
 
     if (targetIdx !== null) {
@@ -257,7 +283,7 @@ export default function UnifiedUploadPage() {
       formData.append("dto", new Blob([photoDto], { type: "application/json" }));
       selectedFiles.forEach((file) => formData.append("image", file));
 
-      // 4. 실제 사진 업로드 요청 (이 부분이 빠져있었습니다!)
+      // 4. 실제 사진 업로드 요청
       const photoRes = await authFetch(`${BASE_URL}/photo/upload`, {
         method: "POST",
         body: formData,
@@ -266,7 +292,14 @@ export default function UnifiedUploadPage() {
       if (!photoRes.ok) throw new Error("사진 업로드 실패");
 
       alert("전시회가 성공적으로 개최되었습니다!");
-      router.push("/");
+      if (exhibitionId) {
+        router.push("/");
+        setTimeout(() => {
+          router.push(`/exhibition/${exhibitionId}`);
+        }, 300); // 0.3초 후 이동
+      } else {
+        router.push("/");
+      }
     } catch (error) {
       console.error(error);
       alert("등록 중 오류 발생");
@@ -351,8 +384,8 @@ export default function UnifiedUploadPage() {
               }}
               className="p-4 border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer text-center"
             >
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                + Bulk Upload
+              <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                + Upload
               </span>
             </div>
 
@@ -373,12 +406,12 @@ export default function UnifiedUploadPage() {
                 onChange={(e) => setIsExhibitionMode(e.target.checked)}
                 className="w-5 h-5 accent-blue-600"
               />
-              <span className="text-sm font-bold">전시회 생성 모드</span>
+              <span className="text-sm font-bold">전시회 생성</span>
             </label>
 
             {isExhibitionMode && (
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-                {["default", "classic"].map((t) => (
+                {["default", "classic", "grey", "art"].map((t) => (
                   <button
                     key={t}
                     type="button"
@@ -400,7 +433,7 @@ export default function UnifiedUploadPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full p-3 border-2 border-gray-100 focus:border-blue-600 outline-none text-sm font-bold"
-                placeholder="EXHIBITION TITLE"
+                placeholder="TITLE"
                 required
               />
             </div>
