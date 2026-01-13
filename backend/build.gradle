@@ -47,6 +47,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    // 사진 압축
+    implementation 'net.coobird:thumbnailator:0.4.20'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 }

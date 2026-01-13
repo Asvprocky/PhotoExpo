@@ -2,6 +2,7 @@ package com.example.backend.service.aws;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,6 +11,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -100,32 +103,46 @@ public class S3Service {
      *
      */
     private String uploadImageToS3(MultipartFile file) {
-        log.info("s3 uploadImageToS3");
-        // 원본 파일 명
+        log.info("s3 uploadImageToS3 (Optimizing...)");
         String originalFilename = file.getOriginalFilename();
-        // 확장자 명
         String extension = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1);
-        // 랜덤 문자열(10자리)을 생성후 원본 파일명과 조합 중복 방지
         String s3FileName = UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename;
 
-        // 이미지 파일 -> InputStream 변환
-        try (InputStream inputStream = file.getInputStream()) {
-            // PutObjectRequest 객체 생성
+        // 압축된 데이터를 담을 출력 스트림
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             InputStream inputStream = file.getInputStream()) {
+
+            // --- 1. 원본 최적화 (1920px, JPG, 압축 80%) ---
+            Thumbnails.of(inputStream)
+                    .size(1920, 1920) // 최대 가로세로 1920px (비율 유지)
+                    .outputFormat("jpg") // 무조건 jpg 로 변환
+                    .outputQuality(0.8) // 화질 80% (용량 대폭 감소, 육안 차이 미미)
+                    .toOutputStream(outputStream);
+
+            // 2. 압축된 데이터를 바이트 배열로 변환
+            byte[] compressedBytes = outputStream.toByteArray();
+
+            // 3. S3 업로드를 위한 요청 객체 생성 (압축된 사이즈로 세팅)
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucket) // 버킷 이름
-                    .key(s3FileName) // 저장할 파일 이름
-                    .acl(ObjectCannedACL.PUBLIC_READ) // 퍼블릭 읽기 권한
-                    .contentType("image/" + extension) // 이미지 MIME 타입
-                    .contentLength(file.getSize()) // 파일 크기
+                    .bucket(bucket)
+                    .key(s3FileName)
+                    .acl(ObjectCannedACL.PUBLIC_READ)
+                    .contentType("image/" + extension)
+                    .contentLength((long) compressedBytes.length) // 중요: 압축된 파일 크기
                     .build();
-            // S3에 이미지 업로드
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
+
+            // 4. S3에 업로드 (ByteArrayInputStream 사용)
+            s3Client.putObject(putObjectRequest,
+                    RequestBody.fromInputStream(new ByteArrayInputStream(compressedBytes), compressedBytes.length));
+
+            log.info("S3 Upload Success: {} (Reduced: {} -> {} bytes)",
+                    s3FileName, file.getSize(), compressedBytes.length);
+
         } catch (Exception exception) {
-            log.error(exception.getMessage(), exception);
-            throw new IllegalArgumentException("S3 파일 업로드중 오류 발생", exception);
+            log.error("S3 파일 업로드/압축 중 오류 발생: {}", exception.getMessage());
+            throw new IllegalArgumentException("S3 파일 업로드 중 오류 발생", exception);
         }
 
-        // public url 반환
         return s3Client.utilities().getUrl(url -> url.bucket(bucket).key(s3FileName)).toString();
     }
 }

@@ -20,7 +20,14 @@ public record ExhibitionResponseDTO(
         LocalDateTime createdAt,
         Long userId,
         String userEmail,
-        List<PhotoResponseDTO> photos) {
+        List<PhotoResponseDTO> photos,
+        UserSimpleDTO userSimpleDTO) {
+    public record UserSimpleDTO(
+            Long userId,
+            String nickname,
+            String email
+    ) {
+    }
 
 
     public static ExhibitionResponseDTO fromEntity(Exhibition exhibition) {
@@ -46,7 +53,13 @@ public record ExhibitionResponseDTO(
                 exhibition.getCreatedAt(),
                 exhibition.getUser().getUserId(),
                 exhibition.getUser().getEmail(),
-                photoDtos
+                photoDtos,
+                new UserSimpleDTO(
+                        exhibition.getUser().getUserId(),
+                        exhibition.getUser().getNickname(),
+                        exhibition.getUser().getEmail()
+                )
+
         );
     }
 

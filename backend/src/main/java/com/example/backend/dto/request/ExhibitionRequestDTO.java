@@ -31,7 +31,7 @@ public class ExhibitionRequestDTO {
         return Exhibition.builder()
                 .title(this.title)
                 .contents(this.contents)
-                .template(templateDetails.name())
+                .template(this.template)
                 .background(templateDetails.background())
                 .layout(templateDetails.layout())
                 .font(templateDetails.font())

@@ -1,7 +1,5 @@
 {
   "name": "templateArt",
-  "displayName": "Art",
-  "thumbnail": "/images/templates/template2_thumb.png",
   "layout": "masonry",
   "font": "Playfair Display",
   "fontColor": "#333333",
