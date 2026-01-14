@@ -249,37 +249,28 @@ export default function UnifiedUploadPage() {
     try {
       let exhibitionId = null;
 
-      // 1. 모든 텍스트 데이터를 JSON 문자열로 변환 (상세 페이지 재현용)
+      // [중요 수정] 모든 모드에서 정렬 정보를 포함한 JSON 구조를 저장.
       const allContents = JSON.stringify(descMap);
 
-      // 2. 전시회 모드일 경우 전시회 먼저 생성하여 ID 확보
       if (isExhibitionMode) {
         const exhibitionRes = await authFetch(`${BASE_URL}/exhibition/create`, {
           method: "POST",
           body: JSON.stringify({ title, contents: allContents, template }),
         });
-
         if (!exhibitionRes.ok) throw new Error("전시회 생성 실패");
-
         const data = await exhibitionRes.json();
         exhibitionId = data.exhibitionId;
       }
 
-      // 3. 사진 업로드를 위한 FormData 준비
       const formData = new FormData();
 
-      // 현재 descMap이 { 인덱스: [{text, align}, ...] } 구조이므로 모든 텍스트를 합침
-      const combinedDesc = Object.values(descMap)
-        .flatMap((list) => list.map((v) => v.text))
-        .join("\n");
-
+      // [중요 수정] 이제 description에 단순 문자열이 아닌 JSON 문자열을 넣음.
       const photoDto = JSON.stringify({
         exhibitionId,
         title,
-        description: combinedDesc,
+        description: allContents, // combinedDesc 대신 JSON 구조인 allContents를 넣음
       });
 
-      // DTO와 파일들을 FormData에 추가
       formData.append("dto", new Blob([photoDto], { type: "application/json" }));
       selectedFiles.forEach((file) => formData.append("image", file));
 
@@ -290,6 +281,8 @@ export default function UnifiedUploadPage() {
       });
 
       if (!photoRes.ok) throw new Error("사진 업로드 실패");
+      const photoResult = await photoRes.json();
+      const uploadedPhotoId = photoResult[0]?.photoId;
 
       alert("전시회가 성공적으로 개최되었습니다!");
       if (exhibitionId) {
@@ -299,6 +292,9 @@ export default function UnifiedUploadPage() {
         }, 300); // 0.3초 후 이동
       } else {
         router.push("/");
+        setTimeout(() => {
+          router.push(`/photo/${uploadedPhotoId}`);
+        }, 300);
       }
     } catch (error) {
       console.error(error);

@@ -26,34 +26,39 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#fafafa] text-[#1a1a1a] selection:bg-black selection:text-white">
-      {/* --- HERO SECTION --- */}
-      <section className="relative h-[80vh] flex flex-col justify-center items-center px-6 border-b border-black/5 overflow-hidden">
+      <section className="relative h-[60vh] min-h-[500px] w-full flex flex-col justify-center items-center overflow-hidden bg-[#8c8c8c]">
+        {/* 1. 배경 */}
+        {/* mix-blend-overlay를 사용하여 회색 배경과 자연스럽게 합성 */}
         <div
-          className="absolute inset-0 opacity-[0.02] pointer-events-none"
+          className="absolute inset-0 pointer-events-none z-0 opacity-80 mix-blend-multiply grayscale"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+            backgroundImage: `url("https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")`, // 실제 콘크리트 이미지 URL 예시
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
-        ></div>
+        />
 
-        <p className="text-[9px] tracking-[0.6em] uppercase mb-10 text-neutral-400 font-medium">
-          Seoul / Digital Archive 2026
-        </p>
-        <h1 className="text-[10vw] leading-[0.9] font-light tracking-tighter uppercase text-center italic font-serif">
-          Archive
-          <br />
-          <span className="not-italic font-sans font-medium tracking-tight">Of Vision</span>
-        </h1>
-        <div className="mt-16 flex gap-16 text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-400">
-          <span>Selected Work</span>
-          <span className="opacity-30">/</span>
-          <span>Curated List</span>
+        {/* 배경 어두운 오버레이 */}
+        <div className="absolute inset-0 bg-black/30 z-0" />
+
+        {/* 2. 메인 콘텐츠 */}
+        <div className="relative z-10 flex flex-col items-center text-center px-6">
+          {/* 하단 설명 및 링크 */}
+          <div className="mt-12 flex flex-col items-center gap-6">
+            <Link href="/photos" className="group flex items-center gap-3">
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white border-b border-white/30 pb-1 transition-all duration-300 group-hover:border-white"></span>
+            </Link>
+          </div>
         </div>
+
+        {/* 3. 하단 장식: 아주 얇은 라인 하나*/}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-16 bg-white/30 z-10"></div>
       </section>
 
       {/* --- EXHIBITIONS --- */}
       <section className="max-w-[1600px] mx-auto px-6 py-40">
         <div className="flex items-baseline justify-between mb-24 border-b border-black/10 pb-6">
-          <h2 className="text-xl font-medium uppercase tracking-[0.3em] italic">Exhibitions</h2>
+          <h2 className="text-xl font-medium uppercase tracking-[0.3em] ">Exhibitions</h2>
           <span className="font-mono text-[9px] tracking-widest text-neutral-400 uppercase">
             Catalog No. 01 — {exhibitions.length.toString().padStart(2, "0")}
           </span>
@@ -69,8 +74,10 @@ export default async function Home() {
                       src={ex.photos[0].imageUrl}
                       alt={ex.title}
                       fill
-                      className="object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.03] grayscale-[0.2] group-hover:grayscale-0"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.02] grayscale-[0.2] group-hover:grayscale-0"
                       priority={idx < 3}
+                      crossOrigin="anonymous"
                     />
                   )}
                   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-center justify-center">
@@ -89,7 +96,6 @@ export default async function Home() {
                       {ex.title}
                     </h3>
                   </div>
-                  <span className="text-[10px] text-neutral-300 font-serif italic">2026</span>
                 </div>
               </Link>
             </div>
@@ -97,74 +103,95 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* --- LATEST STREAM: Minimalist Archive Edition --- */}
-      <section className="bg-white py-60 px-6 border-t border-neutral-100">
+      {/* --- LATEST STREAM: Pure Masonry (Hover-Info Edition) --- */}
+      <section className="bg-white py-20 px-6 border-t border-neutral-100">
         <div className="max-w-[1400px] mx-auto">
-          {/* 섹션 헤더: 극도의 절제미 */}
-          <div className="flex flex-col items-center mb-40 text-center">
-            <span className="text-[9px] tracking-[0.8em] text-neutral-400 uppercase mb-4">
-              Index / Selected Pieces
+          {/* 섹션 헤더 (생략 가능) */}
+          <div className="flex flex-col items-center mb-24 text-center">
+            <span className="text-[10px] tracking-[0.8em] text-neutral-700 uppercase mb-4">
+              Archive Index
             </span>
             <div className="w-px h-12 bg-black opacity-20" />
           </div>
 
-          {/* 그리드: 정갈한 3컬럼 레이아웃 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-32">
+          {/* Masonry Layout */}
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-12 space-y-20">
             {photos.map((photo: any, idx: number) => (
               <Link
                 key={photo.photoId}
                 href={`/photo/${photo.photoId}`}
-                className="group block relative"
+                className="group block relative break-inside-avoid mb-12"
               >
-                <div className="flex flex-col">
-                  {/* 01. 이미지 영역: 선명하고 깨끗한 배치 */}
-                  <div className="relative aspect-[4/5] overflow-hidden bg-neutral-50 border border-neutral-100 transition-all duration-700 group-hover:shadow-2xl">
-                    <img
-                      src={photo.imageUrl}
-                      alt={photo.title}
-                      /* fill 대신 <img> 태그와 w-full 사용 (비율 유지 최적화) */
-                      className="w-full h-full object-cover opacity-100 transition-transform duration-[1.5s] ease-out group-hover:scale-[1.03]"
-                    />
-                    {/* 이미지 안쪽 미세한 테두리 (고급스러운 마감) */}
-                    <div className="absolute inset-0 ring-1 ring-inset ring-black/[0.03] pointer-events-none" />
-                  </div>
+                {/* 이미지 컨테이너 */}
+                <div className="relative overflow-hidden bg-[#efefef] border border-neutral-100 transition-all duration-700 group-hover:shadow-2xl">
+                  <img
+                    src={`${photo.imageUrl}?v=1`}
+                    alt={photo.title}
+                    crossOrigin="anonymous"
+                    className="w-full h-auto opacity-100 transition-transform duration-[1.5s] ease-out group-hover:scale-[1.02] block"
+                  />
 
-                  {/* 02. 정보 영역: 텍스트 최소화 */}
-                  <div className="mt-8 px-1 flex justify-between items-baseline">
-                    <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-serif italic text-neutral-300">
-                        {(idx + 1).toString().padStart(2, "0")}
-                      </span>
-                      <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-800 transition-colors group-hover:text-black">
+                  {/* --- [핵심] 호버 시 나타나는 통합 정보창 --- */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6">
+                    {/* 상단: 타이틀 */}
+                    <div className="mb-2  group-hover:translate-y-0 transition-transform ">
+                      <h3 className="text-[12px] font-bold uppercase tracking-[0.1em] text-white">
                         {photo.title}
                       </h3>
                     </div>
 
-                    <span className="text-[9px] tracking-widest text-neutral-200 uppercase font-medium">
-                      ©2026
-                    </span>
+                    {/* 하단: 프로필 + 닉네임 + 조회수 (한 줄 배치) */}
+                    <div className="flex items-center justify-between w-full group-hover:translate-y-0 transition-transform ">
+                      {/* 왼쪽: 작가 정보 */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 bg-neutral-800">
+                          <img
+                            src={
+                              photo.userProfileUrl ||
+                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                            }
+                            alt={photo.nickname}
+                            className="w-full h-full object-cover grayscale brightness-110"
+                          />
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-white/90">
+                          {photo.userSimpleDTO.nickname || "Anonymous"}
+                        </span>
+                      </div>
+
+                      {/* 오른쪽: 조회수 */}
+                      <div className="flex items-center gap-1.5 text-white/70">
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span className="text-[10px] font-mono font-bold tracking-tighter">
+                          {photo.photoViewCount?.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* 이미지 안쪽 미세 테두리 */}
+                  <div className="absolute inset-0 ring-1 ring-inset ring-black/[0.03] pointer-events-none" />
                 </div>
               </Link>
             ))}
           </div>
-
-          {/* 하단 네비게이션: motion 대신 순수 CSS로 구현 */}
-          <div className="mt-60 flex justify-center">
-            <Link href="/photos" className="group flex flex-col items-center gap-4">
-              <span className="text-[9px] tracking-[0.6em] uppercase text-neutral-400 group-hover:text-black transition-colors duration-500">
-                View All Archive
-              </span>
-              {/* 호버 시 선이 길어지는 CSS 애니메이션 */}
-              <div className="w-8 h-[1px] bg-black opacity-20 transition-all duration-700 group-hover:w-20 group-hover:opacity-100" />
-            </Link>
-          </div>
         </div>
       </section>
-
       {/* --- FOOTER --- */}
       <footer className="py-24 text-center flex flex-col items-center gap-8 border-t border-black/[0.03]">
-        <div className="font-serif italic text-xl tracking-tighter opacity-60">PhotoExpo.</div>
+        <div className="font-serif text-xl tracking-tighter opacity-60">PhotoExpo.</div>
         <div className="flex gap-8 text-[8px] tracking-[0.5em] uppercase text-neutral-400">
           <span>Privacy</span>
           <span>Archive</span>

@@ -58,8 +58,9 @@ export default function Navbar() {
           <Image
             src="/PhotoExpoLogo2.png"
             alt="Logo"
-            width={144}
-            height={30}
+            width={120} // 원하는 기본 가로 길이
+            height={30} // 원하는 기본 세로 길이
+            style={{ width: "auto", height: "auto" }} // 비율 유지 강제
             priority
             // 투명할 때는 로고를 흰색으로 반전 (로고가 검은색일 경우)
             className={`transition-all duration-300 ${isTransparent ? "brightness-0 invert" : ""}`}
@@ -72,9 +73,7 @@ export default function Navbar() {
         className={`absolute left-1/2 -translate-x-1/2 flex gap-8 font-bold transition-colors duration-300 ${
           isTransparent ? "text-white" : "text-gray-700 hover:text-black"
         }`}
-      >
-        <Link href="/exhibition">Exhibition</Link>
-      </div>
+      ></div>
 
       {/* --- 오른쪽: 버튼 세트 --- */}
       <div className="flex items-center gap-4">
@@ -87,7 +86,7 @@ export default function Navbar() {
                 : "bg-black text-white hover:bg-gray-800" // 불투명할 땐 검은색 버튼
             }`}
           >
-            전시 제작
+            프로젝트 생성
           </Link>
         )}
 

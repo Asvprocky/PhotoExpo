@@ -18,7 +18,7 @@ export default async function ExhibitionModalPage({ params }: { params: Promise<
 
   console.log("전시회 유저 상세 정보:", JSON.stringify(data.userSimpleDTO, null, 2));
   return (
-    <Modal title={data.title} user={data.userSimpleDTO}>
+    <Modal exhibitionId={Number(id)} title={data.title} user={data.userSimpleDTO}>
       <ExhibitionDetail params={params} />
     </Modal>
   );

@@ -1,7 +1,5 @@
 import React from "react";
-import Image from "next/image";
 
-// 1. 타입 정의 (사진 상세 정보)
 interface PhotoDetailData {
   photoId: number;
   imageUrl: string;
@@ -9,7 +7,11 @@ interface PhotoDetailData {
   description: string;
   userEmail: string;
   nickname: string;
-  // 필요에 따라 추가 (예: uploadDate, tags 등)
+}
+
+interface DescriptionItem {
+  text: string;
+  align: string;
 }
 
 export default async function PhotoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,62 +20,84 @@ export default async function PhotoDetailPage({ params }: { params: Promise<{ id
   let errorMsg = null;
 
   try {
-    // 2. 백엔드 데이터 요청 (Spring Boot 서버 주소 확인)
-    const res = await fetch(`http://localhost:8080/photo/${id}`, {
-      cache: "no-store",
-    });
-
+    const res = await fetch(`http://localhost:8080/photo/${id}`, { cache: "no-store" });
     if (res.ok) {
       const json = await res.json();
-      // 백엔드 응답이 json.data 안에 데이터가 들어오는 구조라면 json.data 사용
       data = json.data || json;
     } else {
-      errorMsg = `사진을 불러올 수 없습니다. (${res.status})`;
+      errorMsg = "사진을 불러올 수 없습니다.";
     }
   } catch (error) {
-    console.error("Fetch error:", error);
-    errorMsg = "서버와 연결할 수 없습니다.";
+    errorMsg = "서버 연결 실패";
   }
 
-  // 3. 에러 처리 UI
-  if (errorMsg) {
-    return (
-      <div className="py-20 text-center text-red-500 font-bold">
-        <h2>오류 발생</h2>
-        <p>{errorMsg}</p>
-      </div>
-    );
+  if (errorMsg || !data) return <div className="py-20 text-center text-red-500">{errorMsg}</div>;
+
+  let descMap: Record<number, DescriptionItem[]> = {};
+  try {
+    descMap = JSON.parse(data.description);
+  } catch {
+    descMap = { 1: [{ text: data.description, align: "text-center" }] };
   }
 
-  // 4. 데이터 없는 경우
-  if (!data) {
-    return <div className="py-20 text-center font-bold">데이터가 존재하지 않습니다.</div>;
-  }
+  const hasTopDesc = descMap[0]?.some((i) => i.text.trim());
+  const hasBottomDesc = descMap[1]?.some((i) => i.text.trim());
+
+  const getJustifyClass = (align: string) => {
+    if (align === "text-center") return "justify-center";
+    if (align === "text-right") return "justify-end";
+    return "justify-start";
+  };
 
   return (
-    <div className="bg-white">
-      {/* 이미지 영역: aspect-square 혹은 자연스러운 높이 조절 */}
-      <div className="flex flex-col gap-10 pb-20">
-        <div className="w-full bg-gray-50 flex justify-center">
-          <img
-            src={data.imageUrl}
-            alt={data.title}
-            className="max-w-full h-auto shadow-lg"
-            referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
-          />
+    // bg-white 제거 -> 모달의 검은 배경을 그대로 사용
+    <div className="w-full">
+      {/* 1. 이미지 위 설명: 흰색 여백 없이 텍스트만 띄움 */}
+      {hasTopDesc && (
+        <div className="max-w-3xl mx-auto px-4">
+          {descMap[0].map((item, idx) => (
+            <div
+              key={`top-${idx}`}
+              className={`flex w-full mb-4 border-b border-white/10 ${getJustifyClass(item.align)}`}
+            >
+              <div
+                className={`text-lg leading-relaxed text-white/80 font-medium whitespace-pre-wrap ${item.align}`}
+              >
+                {item.text}
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-      {/* 정보 영역: ExhibitionDetail의 톤앤매너 유지 */}
-      <div className="mt-12 max-w-3xl mx-auto">
-        <div className="flex items-center gap-4 mb-8 border-b border-gray-100 pb-6">
-          <p className="text-lg font-black text-gray-900">{data.nickname || data.userEmail}</p>
+      )}
 
-          <div className="text-lg leading-relaxed text-gray-600 font-medium whitespace-pre-wrap">
-            {data.description}
-          </div>
-        </div>
+      {/* 2. 이미지 영역: bg-gray-50 제거하여 배경색 차이로 인한 여백 차단 */}
+      <div className="w-full flex justify-center">
+        <img
+          src={`${data.imageUrl}?v=1`}
+          alt={data.title}
+          className="max-w-full h-auto shadow-2xl block"
+          referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
+        />
       </div>
+
+      {/* 3. 이미지 아래 설명: 간격만 유지 */}
+      {hasBottomDesc && (
+        <div className="mt-10 max-w-3xl mx-auto">
+          {descMap[1].map((item, idx) => (
+            <div
+              key={`bottom-${idx}`}
+              className={`flex w-full  border-b border-white/10 ${getJustifyClass(item.align)}`}
+            >
+              <div
+                className={`text-lg leading-relaxed text-white/80 font-medium whitespace-pre-wrap ${item.align}`}
+              >
+                {item.text}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -124,7 +124,13 @@ export default function UserInfoPage() {
     <div className="min-h-screen bg-white">
       {/* 상단 배너 */}
       <div className="relative h-[280px] w-full bg-gray-200 -mt-14">
-        <Image src="/photoExpoBanner.jpg" alt="Wide Cover" fill className="object-cover" />
+        <Image
+          src="/photoExpoBanner.jpg"
+          alt="Wide Cover"
+          fill
+          className="object-cover"
+          crossOrigin="anonymous"
+        />
         <div className="absolute inset-0 bg-black/10" />
       </div>
 
@@ -138,6 +144,7 @@ export default function UserInfoPage() {
                 alt="Profile"
                 fill
                 className="object-cover"
+                crossOrigin="anonymous"
               />
             </div>
             <h1 className="text-2xl font-black text-gray-900 mb-2">{userInfo?.nickname}</h1>
@@ -184,6 +191,7 @@ export default function UserInfoPage() {
                         alt={ex.title}
                         fill
                         className="object-cover transition-all group-hover:scale-105"
+                        crossOrigin="anonymous"
                       />
                     )}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4">
@@ -213,6 +221,7 @@ export default function UserInfoPage() {
                       alt="My Photo"
                       fill
                       className="object-cover transition-all group-hover:scale-110"
+                      crossOrigin="anonymous"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
                       <div className="flex justify-end">

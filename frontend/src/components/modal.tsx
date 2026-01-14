@@ -1,81 +1,291 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ModalProps {
   children: React.ReactNode;
   title?: string;
-  nickname?: string;
+  photoId?: number; // optional
+  exhibitionId?: number;
   user?: {
     nickname: string;
     email: string;
   };
 }
 
-export default function Modal({ children, title, user }: ModalProps) {
+interface Comment {
+  id: number;
+  nickname: string;
+  email: string; // 작성자 확인용 필드 추가
+  content: string;
+  createdAt: string;
+}
+
+export default function Modal({ children, title, user, photoId, exhibitionId }: ModalProps) {
+  const isPhoto = !!photoId;
+  const isExhibition = !!exhibitionId && !photoId;
+
+  if (!photoId && !exhibitionId) {
+    console.error(" Modal에 photoId 또는 exhibitionId가 필요합니다");
+    return null;
+  }
+
+  const API_BASE_URL = "http://localhost:8080";
+
+  // --- 추가: 토큰 가져오기 함수 ---
+  const getAuthHeader = (): Record<string, string> => {
+    // 클라이언트 사이드인지 확인 (Next.js SSR 에러 방지)
+    if (typeof window === "undefined") return {};
+
+    const token = localStorage.getItem("accessToken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+  const isLoggedIn = () => {
+    if (typeof window === "undefined") return false;
+    return !!localStorage.getItem("accessToken");
+  };
+
   const router = useRouter();
   const overlay = useRef<HTMLDivElement>(null);
+
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [comment, setComment] = useState("");
+
+  const onDismiss = () => router.back();
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onDismiss();
     };
     window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, []);
-
-  useEffect(() => {
     document.body.style.overflow = "hidden";
+
     return () => {
+      window.removeEventListener("keydown", handleKey);
       document.body.style.overflow = "auto";
     };
   }, []);
 
-  const onDismiss = () => router.back();
+  /* ---------------- API 로직 (주소 직접 사용) ---------------- */
 
+  // 1. 댓글 조회 (사진일 때만 동작하도록 가드 추가)
+  const fetchComments = async () => {
+    // [추가] 사진이 아니거나 photoId가 없으면 호출 안함
+    if (!isPhoto || !photoId) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/comment/photo/${photoId}`, {
+        method: "GET",
+        headers: { ...getAuthHeader() },
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data);
+      }
+    } catch (error) {
+      console.error("댓글 조회 에러:", error);
+    }
+  };
+
+  // 좋아요 상태 조회
+  const fetchLikeStatus = async () => {
+    try {
+      // [수정] 호출할 URL을 타입에 따라 엄격하게 구분
+      let url = "";
+      if (isPhoto && photoId) {
+        url = `${API_BASE_URL}/photo/${photoId}/like`;
+      } else if (isExhibition && exhibitionId) {
+        url = `${API_BASE_URL}/exhibition/${exhibitionId}/like`;
+      }
+
+      if (!url) return; // URL이 없으면 실행 안함
+
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { ...getAuthHeader() },
+        credentials: "include",
+      });
+
+      if (!res.ok) return;
+      const data = await res.json();
+      setLiked(data.liked);
+      setLikeCount(data.likeCount);
+    } catch (e) {
+      console.error("좋아요 상태 조회 에러:", e);
+    }
+  };
+
+  // 2. 좋아요 토글
+  const toggleLike = async () => {
+    if (!isLoggedIn()) {
+      alert("로그인이 필요한 기능입니다");
+      return;
+    }
+
+    try {
+      const url = isPhoto
+        ? `${API_BASE_URL}/photo/${photoId}/like/toggle`
+        : `${API_BASE_URL}/exhibition/${exhibitionId}/like/toggle`;
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          ...getAuthHeader(),
+        },
+        credentials: "include",
+      });
+
+      if (res.status === 401) {
+        alert("로그인이 필요합니다");
+        return;
+      }
+
+      if (!res.ok) {
+        console.error("LIKE API ERROR:", res.status);
+        return;
+      }
+
+      const data = await res.json();
+      setLiked(data.liked);
+      setLikeCount(data.likeCount);
+    } catch (error) {
+      console.error("LIKE ERROR:", error);
+    }
+  };
+
+  // 3. 댓글 작성
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isLoggedIn()) {
+      alert("로그인이 필요한 기능입니다");
+      return;
+    }
+    if (!comment.trim()) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/comment/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(), // 토큰 추가
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          photoId,
+          content: comment,
+        }),
+      });
+      // 401 처리
+      if (res.status === 401) {
+        alert("로그인이 필요합니다");
+        return;
+      }
+
+      if (res.ok) {
+        setComment("");
+        fetchComments();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    // 1. 좋아요 정보는 사진/전시 공통으로 가져옴
+    fetchLikeStatus();
+
+    // 2. 댓글은 사진일 때만 가져옴
+    if (isPhoto) {
+      fetchComments();
+    } else {
+      setComments([]); // 전시일 때는 댓글 리스트 초기화
+    }
+  }, [photoId, exhibitionId]); // 의존성 배열 유지
   return (
     <div
       ref={overlay}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-0"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95"
       onClick={(e) => e.target === overlay.current && onDismiss()}
     >
-      {/* --- [우측 상단] 닫기 버튼: 이건 고정(fixed)되어야 언제든 끌 수 있습니다 --- */}
       <button
         onClick={onDismiss}
-        className="fixed top-8 right-10 z-[70] text-white/50 hover:text-white transition-colors"
+        className="fixed top-8 right-10 z-[70] text-white/50 hover:text-white text-2xl"
       >
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        ✕
       </button>
 
-      {/* --- [스크롤 컨테이너] --- */}
-      <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
-        {/* 프로필 정보를 스크롤 영역 안쪽 최상단에 배치합니다 */}
-        <div className="w-full max-w-7xl relative">
+      <div className="w-full h-full overflow-y-auto flex justify-center">
+        <div className="w-full max-w-7xl relative px-4">
           {(title || user?.nickname) && (
-            /* fixed를 제거하고 absolute 또는 상대적 위치를 사용 */
-            <div className="absolute top-6 left-2 z-[70] text-white flex items-center gap-4 pointer-events-none">
-              <div className="w-10 h-10 rounded-full bg-gray-500 border border-white/20 overflow-hidden">
-                {/* 프로필 이미지 들어갈 자리 */}
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm font-black">{title}</span>
-                </div>
-                <p className="text-[11px] font-medium text-gray-400">{user?.nickname}</p>
-              </div>
+            <div className="absolute top-6 left-2 z-[70] text-white">
+              <p className="text-sm font-black">{title}</p>
+              <p className="text-xs text-gray-400">{user?.nickname}</p>
             </div>
           )}
 
-          {/* 실제 콘텐츠 (전시 상세 내용) */}
-          <div className="w-full py-22 px-3">{children}</div>
+          <div className="pt-24 pb-20">
+            {children}
+
+            {/* 좋아요 버튼 섹션 */}
+            <div className="mt-16 flex items-center gap-4">
+              <button
+                onClick={toggleLike}
+                className={`px-6 py-2.5 rounded-full border transition-colors flex items-center gap-2 ${
+                  liked
+                    ? "bg-white text-black border-white"
+                    : "border-white/20 text-white hover:bg-white/10"
+                }`}
+              >
+                <span>{liked ? "❤️" : "🤍"}</span>
+                <span className="font-bold">{likeCount}</span>
+              </button>
+            </div>
+
+            {/* 댓글 섹션 */}
+            {isPhoto && (
+              <div className="mt-12 border-t border-white/10 pt-10">
+                <h3 className="text-white font-bold mb-6">댓글 {comments.length}</h3>
+
+                <form onSubmit={handleCommentSubmit} className="flex gap-3 mb-10">
+                  <input
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="댓글을 남겨보세요"
+                    className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-sm rounded-lg text-white focus:outline-none focus:border-white/40"
+                  />
+                  <button className="bg-white text-black px-8 rounded-lg font-bold hover:bg-gray-200 transition-colors">
+                    게시
+                  </button>
+                </form>
+
+                <div className="space-y-8">
+                  {comments.length > 0 ? (
+                    comments.map((c) => (
+                      <div key={c.id} className="flex gap-4">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex-shrink-0" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-bold text-white">{c.nickname}</span>
+                            <span className="text-[10px] text-gray-500">
+                              {new Date(c.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-300 leading-relaxed">{c.content}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-sm py-10 text-center">댓글을 남겨보세요</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
