@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -58,6 +60,22 @@ public class CommentService {
                 .build();
 
         return CommentResponseDTO.fromEntity(commentRepository.save(comment));
+    }
+
+    /**
+     * 댓글 조회
+     */
+    @Transactional(readOnly = true)
+    public List<CommentResponseDTO> getComment(Long photoId) {
+        Photo photo = photoRepository.findById(photoId)
+                .orElseThrow(() -> new EntityNotFoundException("Photo not found"));
+
+        return commentRepository
+                .findByPhotoAndIsDeletedFalseOrderByCreatedAtDesc(photo)
+                .stream()
+                .map(CommentResponseDTO::fromEntity)
+                .toList();
+
     }
 
     /**

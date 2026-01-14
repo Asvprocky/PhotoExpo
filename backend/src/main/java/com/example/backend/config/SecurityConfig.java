@@ -141,19 +141,61 @@ public class SecurityConfig {
         // 인가
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 전시 조회 (전체 + 단일) 누구나 허용  , Swagger 테스트 시 "/swagger-ui/**","/**" 추가
-                        .requestMatchers(HttpMethod.GET, "/login/**", "/logout", "/exhibition/all", "/exhibition/*", "/photo/*").permitAll()
+                        // 1. 누구나 접근 가능 (조회)
+                        .requestMatchers(HttpMethod.GET,
+                                "/login/**",
+                                "/logout",
+                                "/exhibition/all",
+                                "/exhibition/*",
+                                "/photo/*",
+                                "/comment/photo/*",
+                                "/photo/*/like",
+                                "/exhibition/*/like"
+                        ).permitAll()
 
-                        // 2. 회원가입 등 공개
-                        .requestMatchers(HttpMethod.POST, "/user/exist", "/user/join").permitAll()
+                        // 2. 회원가입 / 인증 관련
+                        .requestMatchers(HttpMethod.POST,
+                                "/user/exist",
+                                "/user/join"
+                        ).permitAll()
                         .requestMatchers("/jwt/exchange", "/jwt/refresh").permitAll()
 
                         // 3. USER 권한 필요
-                        .requestMatchers(HttpMethod.GET, "/exhibition/my", "/user", "/user/info", "/photo/my", "/templates", "/order/create").hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/exhibition/create", "/s3/upload", "/photo/upload", "/photo/*/like/**", "/comment/*", "/snsLink").hasRole("USER")
-                        .requestMatchers(HttpMethod.PUT, "/exhibition/*", "/snsLink/*", "/comment/*").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/exhibition/*", "/photo/*", "/order/*", "/snsLink/*", "/comment/*").hasRole("USER")
-                        // 4. 그외 모든 요청 인증 필요
+                        .requestMatchers(HttpMethod.GET,
+                                "/exhibition/my",
+                                "/user",
+                                "/user/info",
+                                "/photo/my",
+                                "/templates",
+                                "/order/create"
+                        ).hasRole("USER")
+
+                        .requestMatchers(HttpMethod.POST,
+                                "/exhibition/create",
+                                "/s3/upload",
+                                "/photo/upload",
+                                "/photo/*/like/**",
+                                "/exhibition/*/like/**",
+                                "/comment/*",
+                                "/comment/create",
+                                "/snsLink"
+                        ).hasRole("USER")
+
+                        .requestMatchers(HttpMethod.PUT,
+                                "/exhibition/*",
+                                "/snsLink/*",
+                                "/comment/*"
+                        ).hasRole("USER")
+
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/exhibition/*",
+                                "/photo/*",
+                                "/order/*",
+                                "/snsLink/*",
+                                "/comment/*"
+                        ).hasRole("USER")
+
+                        // 4. 나머지는 인증 필요
                         .anyRequest().authenticated()
                 );
 

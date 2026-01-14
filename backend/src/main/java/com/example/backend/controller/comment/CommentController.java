@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/comment")
 @RequiredArgsConstructor
@@ -27,6 +29,14 @@ public class CommentController {
         log.info("Response : {}", response);
         return ResponseEntity.status(200).body(response);
 
+    }
+
+    /**
+     * 댓글 조회
+     */
+    @GetMapping("/photo/{photoId}")
+    public ResponseEntity<List<CommentResponseDTO>> getComments(@PathVariable Long photoId) {
+        return ResponseEntity.ok(commentService.getComment(photoId));
     }
 
     /**

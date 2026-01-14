@@ -41,7 +41,8 @@ public class Comment {
     private String content;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted; //삭제 여부(소프트 삭제용)
+    @Builder.Default
+    private Boolean isDeleted = false; //삭제 여부(소프트 삭제용)
 
     @CreatedDate
     @Column(name = "created_at")

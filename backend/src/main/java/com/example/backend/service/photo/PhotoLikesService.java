@@ -7,10 +7,13 @@ import com.example.backend.dto.response.PhotoLikesResponseDTO;
 import com.example.backend.repository.PhotoLikesRepository;
 import com.example.backend.repository.PhotoRepository;
 import com.example.backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -57,5 +60,24 @@ public class PhotoLikesService {
         //  count 의 수는 PhotoLikes DB 에 레코드에 남아있는 Photo_id 수와 같음
         long count = photoLikesRepository.countByPhoto(photo);
         return new PhotoLikesResponseDTO(count, true);
+    }
+
+    /**
+     * 좋아요 조회
+     */
+    @Transactional(readOnly = true)
+    public PhotoLikesResponseDTO getLikeStatus(Long photoId, UserDetails userDetails) {
+        Photo photo = photoRepository.findById(photoId)
+                .orElseThrow(() -> new EntityNotFoundException("Photo not found"));
+
+        long likeCount = photoLikesRepository.countByPhoto(photo);
+
+        boolean liked = false;
+        if (userDetails != null) {
+            Users user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+            liked = photoLikesRepository.existsByPhotoAndUser(photo, user);
+        }
+
+        return new PhotoLikesResponseDTO(likeCount, liked);
     }
 }

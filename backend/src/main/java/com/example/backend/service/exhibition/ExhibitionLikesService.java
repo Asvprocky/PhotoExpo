@@ -7,10 +7,13 @@ import com.example.backend.dto.response.ExhibitionLikesResponseDTO;
 import com.example.backend.repository.ExhibitionLikesRepository;
 import com.example.backend.repository.ExhibitionRepository;
 import com.example.backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -22,6 +25,14 @@ public class ExhibitionLikesService {
     private final UserRepository userRepository;
     private final ExhibitionRepository exhibitionRepository;
     private final ExhibitionLikesRepository exhibitionLikesRepository;
+
+
+    /**
+     * 전시 좋아요 메서드
+     *
+     * @param exhibitionId
+     * @return
+     */
 
     public ExhibitionLikesResponseDTO toggleLike(Long exhibitionId) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -45,9 +56,32 @@ public class ExhibitionLikesService {
                 .user(user)
                 .build();
         exhibitionLikesRepository.save(likes);
-        
+
         long count = exhibitionLikesRepository.countByExhibition(exhibition);
         return new ExhibitionLikesResponseDTO(count, true);
 
     }
+
+    /**
+     * 전시 좋아요 조회
+     */
+    @Transactional(readOnly = true)
+    public ExhibitionLikesResponseDTO getLikeStatus(
+            Long exhibitionId,
+            UserDetails userDetails
+    ) {
+        Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
+                .orElseThrow(() -> new EntityNotFoundException("Exhibition not found"));
+
+        long likeCount = exhibitionLikesRepository.countByExhibition(exhibition);
+
+        boolean liked = false;
+        if (userDetails != null) {
+            Users user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+            liked = exhibitionLikesRepository.existsByExhibitionAndUser(exhibition, user);
+        }
+
+        return new ExhibitionLikesResponseDTO(likeCount, liked);
+    }
+
 }

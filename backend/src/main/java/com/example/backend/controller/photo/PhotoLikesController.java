@@ -4,10 +4,9 @@ import com.example.backend.dto.response.PhotoLikesResponseDTO;
 import com.example.backend.service.photo.PhotoLikesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +23,26 @@ public class PhotoLikesController {
         PhotoLikesResponseDTO likes = photoLikesService.toggleLike(photoId);
         return ResponseEntity.status(200).body(likes);
 
+    }
+
+    /**
+     * 사진 좋아요 조회
+     */
+    @GetMapping
+    public PhotoLikesResponseDTO getLikeStatus(
+            @PathVariable Long photoId,
+            Authentication authentication
+    ) {
+        UserDetails userDetails = null;
+
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof UserDetails) {
+
+            userDetails = (UserDetails) authentication.getPrincipal();
+        }
+
+        return photoLikesService.getLikeStatus(photoId, userDetails);
     }
 
 }

@@ -1,7 +1,7 @@
 package com.example.backend.dto.response;
 
 public record PhotoLikesResponseDTO(
-        Long LikeCount,
-        boolean isLiked
+        Long likeCount,
+        boolean liked
 ) {
 }

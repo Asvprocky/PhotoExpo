@@ -4,10 +4,9 @@ import com.example.backend.dto.response.ExhibitionLikesResponseDTO;
 import com.example.backend.service.exhibition.ExhibitionLikesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,5 +20,14 @@ public class ExhibitionLikesController {
         ExhibitionLikesResponseDTO likes = exhibitionLikesService.toggleLike(exhibitionId);
         return ResponseEntity.status(200).body(likes);
 
+    }
+
+    @GetMapping
+    public ResponseEntity<ExhibitionLikesResponseDTO> getLikeStatus(
+            @PathVariable Long exhibitionId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        
+        ExhibitionLikesResponseDTO likes = exhibitionLikesService.getLikeStatus(exhibitionId, userDetails);
+        return ResponseEntity.status(200).body(likes);
     }
 }
