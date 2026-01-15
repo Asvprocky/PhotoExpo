@@ -17,9 +17,9 @@ interface ModalProps {
 interface Comment {
   id: number;
   nickname: string;
-  email: string; // 작성자 확인용 필드 추가
   content: string;
   createdAt: string;
+  mine: boolean; // 작성자 확인 필드
 }
 
 export default function Modal({ children, title, user, photoId, exhibitionId }: ModalProps) {
@@ -88,6 +88,30 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
       }
     } catch (error) {
       console.error("댓글 조회 에러:", error);
+    }
+  };
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    if (!confirm("댓글을 삭제하시겠습니까?")) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/comment/${commentId}`, {
+        method: "DELETE",
+        headers: {
+          ...getAuthHeader(),
+        },
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        alert("삭제 권한이 없거나 오류가 발생했습니다.");
+        return;
+      }
+
+      // 삭제 성공 → 댓글 다시 불러오기
+      fetchComments();
+    } catch (e) {
+      console.error("댓글 삭제 에러", e);
     }
   };
 
@@ -266,16 +290,47 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
                 <div className="space-y-8">
                   {comments.length > 0 ? (
                     comments.map((c) => (
-                      <div key={c.id} className="flex gap-4">
+                      <div key={c.id} className="flex gap-4 group relative">
+                        {" "}
+                        {/* group과 relative 추가 */}
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex-shrink-0" />
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-bold text-white">{c.nickname}</span>
-                            <span className="text-[10px] text-gray-500">
-                              {new Date(c.createdAt).toLocaleDateString()}
-                            </span>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            {" "}
+                            {/* justify-between 추가 */}
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-bold text-white">{c.nickname}</span>
+                              <span className="text-[10px] text-gray-500">
+                                {new Date(c.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            {/* 삭제 버튼: 아이콘 형태 */}
+                            {c.mine && (
+                              <button
+                                onClick={() => handleDeleteComment(c.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-all p-1 text-gray-500 hover:text-red-400"
+                                title="댓글 삭제"
+                              >
+                                {/* 쓰레기통 또는 X 아이콘 (SVG) */}
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M3 6h18" />
+                                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                </svg>
+                              </button>
+                            )}
                           </div>
-                          <p className="text-sm text-gray-300 leading-relaxed">{c.content}</p>
+                          <p className="text-sm text-gray-300 leading-relaxed pr-6">{c.content}</p>
                         </div>
                       </div>
                     ))
