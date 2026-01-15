@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -10,60 +11,73 @@ export default function ProfileDropdown() {
   };
 
   return (
-    <div className="relative group flex items-center">
-      {/* --- 프로필 아이콘 --- */}
-      <div className="cursor-pointer py-2 px-2 z-[101]">
-        <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-200">
+    <div className="relative group flex items-center overflow-visible">
+      {/* --- 프로필 아이콘: 테두리를 없애고 더 깔끔하게 --- */}
+      <div className="cursor-pointer p-1 z-[101] transition-transform active:scale-95">
+        <div className="w-8 h-8 rounded-full overflow-hidden border border-black/5 shadow-sm">
           <Image
             src="/photoExpo_Profile_Image.jpg"
             alt="Profile"
-            width={36}
-            height={36}
+            width={32}
+            height={32}
             className="object-cover"
           />
         </div>
       </div>
 
-      {/* --- 드롭다운 메뉴  --- */}
-      <div className="absolute right-[-10px] top-[50px] w-72 bg-white border border-gray-200 shadow-2xl rounded-xl invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-[100]">
-        {/* "이어지는 화살표" (CSS Triangle) */}
-        {/*<div className="absolute top-[-8px] right-[20px] w-4 h-4 bg-white border-t border-l border-gray-200 rotate-45 z-[-1]"></div>*/}
-
-        {/* 상단 배경/커버 섹션 */}
-        <div className="relative h-24 bg-gray-900 rounded-t-xl overflow-visible">
-          {/* 상단 커버 이미지 (나중에 배경색 대신 이미지 삽입 가능) */}
-          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full border-4 border-white overflow-hidden shadow-sm bg-white">
-            <Image src="/photoExpo_Profile_Image.jpg" alt="Profile Large" width={80} height={80} />
-          </div>
+      {/* --- 드롭다운 메뉴: 아트 라벨 스타일 --- */}
+      <div className="absolute right-0 top-[48px] w-60 bg-white border border-gray-100 shadow-[0_10px_40px_rgba(0,0,0,0.08)] rounded-2xl invisible group-hover:visible opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[100] overflow-hidden">
+        {/* 유저 정보 섹션: 배경색 없이 텍스트 위주로 */}
+        <div className="pt-6 pb-4 px-6 border-b border-gray-50">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">
+            Account
+          </p>
+          <h3 className="text-sm font-black text-gray-900 leading-tight">Jason Lee</h3>
         </div>
 
-        {/* 유저 정보 (간격 확보를 위해 mt-12 추가) */}
-        <div className="pt-12 pb-6 px-6 text-center border-b border-gray-100">
-          <h3 className="text-lg font-black text-gray-900">Jason Lee</h3>
-          <p className="text-sm font-medium text-gray-500">cytron1225@naver.com</p>
-        </div>
-
-        {/* 메뉴 리스트 (사진 속 항목 반영) */}
-        <div className="py-2 max-h-[400px] overflow-y-auto">
-          <div className="px-6 py-3 text-[12px] font-black text-gray-400 uppercase tracking-widest"></div>
+        {/* 메뉴 리스트 */}
+        <div className="py-2">
           <Link
             href="/user/info"
-            className="block px-6 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50"
+            className="group/item flex items-center justify-between px-6 py-3 text-xs font-bold text-gray-600 hover:text-black hover:bg-gray-50 transition-colors"
           >
-            프로필
+            <span>프로필 관리</span>
+            <span className="opacity-0 group-hover/item:opacity-100 transition-all -translate-x-2 group-hover/item:translate-x-0">
+              →
+            </span>
           </Link>
           <Link
             href="/settings"
-            className="block px-6 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50"
+            className="group/item flex items-center justify-between px-6 py-3 text-xs font-bold text-gray-600 hover:text-black hover:bg-gray-50 transition-colors"
           >
-            설정
+            <span>설정</span>
+            <span className="opacity-0 group-hover/item:opacity-100 transition-all -translate-x-2 group-hover/item:translate-x-0">
+              →
+            </span>
           </Link>
-          <div className="border-t border-gray-100 my-1"></div>
+
+          <div className="h-[1px] bg-gray-50 my-1 mx-6"></div>
+
           <button
             onClick={handleLogout}
-            className="w-full text-left px-6 py-3 text-sm font-bold text-red-500 hover:bg-gray-50"
+            className="w-full flex items-center justify-between px-6 py-4 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors"
           >
-            로그아웃
+            <span>로그아웃</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
           </button>
         </div>
       </div>

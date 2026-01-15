@@ -103,7 +103,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* --- LATEST STREAM: Pure Masonry (Hover-Info Edition) --- */}
+      {/* --- LATEST STREAM  --- */}
       <section className="bg-white py-20 px-6 border-t border-neutral-100">
         <div className="max-w-[1400px] mx-auto">
           {/* 섹션 헤더 (생략 가능) */}
@@ -158,25 +158,44 @@ export default async function Home() {
                           {photo.userSimpleDTO.nickname || "Anonymous"}
                         </span>
                       </div>
+                      {/* 오른쪽: 좋아요 + 조회수 */}
+                      <div className="flex items-center gap-4 text-white/70">
+                        {/* 좋아요 db likeCount 추가 후 구현 예정
+                        <div className="flex items-center gap-1.5">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="text-white/80"
+                          >
+                            <path d="M12 21s-6.716-4.35-9.428-7.063C.857 12.222 0 10.53 0 8.75 0 5.574 2.574 3 5.75 3c1.74 0 3.41.81 4.5 2.09C11.34 3.81 13.01 3 14.75 3 17.926 3 20.5 5.574 20.5 8.75c0 1.78-.857 3.472-2.572 5.187C18.716 16.65 12 21 12 21z" />
+                          </svg>
+                          <span className="text-[10px] font-mono font-bold tracking-tighter">
+                            {photo.likeCount?.toLocaleString() ?? 0}
+                          </span>
+                        </div>
+                        */}
 
-                      {/* 오른쪽: 조회수 */}
-                      <div className="flex items-center gap-1.5 text-white/70">
-                        <svg
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <span className="text-[10px] font-mono font-bold tracking-tighter">
-                          {photo.photoViewCount?.toLocaleString()}
-                        </span>
+                        {/* 오른쪽: 조회수 */}
+                        <div className="flex items-center gap-1.5 text-white/70">
+                          <svg
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          <span className="text-[10px] font-mono font-bold tracking-tighter">
+                            {photo.photoViewCount?.toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -191,7 +210,7 @@ export default async function Home() {
       </section>
       {/* --- FOOTER --- */}
       <footer className="py-24 text-center flex flex-col items-center gap-8 border-t border-black/[0.03]">
-        <div className="font-serif text-xl tracking-tighter opacity-60">PhotoExpo.</div>
+        <div className="text-xl tracking-tighter opacity-60">PhotoExpo.</div>
         <div className="flex gap-8 text-[8px] tracking-[0.5em] uppercase text-neutral-400">
           <span>Privacy</span>
           <span>Archive</span>

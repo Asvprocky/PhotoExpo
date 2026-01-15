@@ -49,6 +49,10 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
   const router = useRouter();
   const overlay = useRef<HTMLDivElement>(null);
 
+  // --- [확대 관련 상태 추가] ---
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomedImgSrc, setZoomedImgSrc] = useState("");
+
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -56,18 +60,32 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
 
   const onDismiss = () => router.back();
 
+  // ESC 키로 확대창 또는 모달 닫기
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onDismiss();
+      if (e.key === "Escape") {
+        if (isZoomed) setIsZoomed(false);
+        else onDismiss();
+      }
     };
     window.addEventListener("keydown", handleKey);
     document.body.style.overflow = "hidden";
-
     return () => {
       window.removeEventListener("keydown", handleKey);
       document.body.style.overflow = "auto";
     };
-  }, []);
+  }, [isZoomed]);
+
+  // --- [사진 클릭 감지 핸들러] ---
+  // children 내부의 이미지가 클릭되면 이 함수가 실행됩니다.
+  const handleContentClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "IMG") {
+      const imgSrc = (target as HTMLImageElement).src;
+      setZoomedImgSrc(imgSrc);
+      setIsZoomed(true);
+    }
+  };
 
   /* ---------------- API 로직 (주소 직접 사용) ---------------- */
 
@@ -118,7 +136,6 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
   // 좋아요 상태 조회
   const fetchLikeStatus = async () => {
     try {
-      // [수정] 호출할 URL을 타입에 따라 엄격하게 구분
       let url = "";
       if (isPhoto && photoId) {
         url = `${API_BASE_URL}/photo/${photoId}/like`;
@@ -126,18 +143,26 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
         url = `${API_BASE_URL}/exhibition/${exhibitionId}/like`;
       }
 
-      if (!url) return; // URL이 없으면 실행 안함
+      if (!url) return;
+
+      // [체크] 현재 로컬스토리지에 토큰이 있는지 확인하는 로그
+      const authHeader = getAuthHeader();
+      console.log("GET 요청 헤더 확인:", authHeader);
 
       const res = await fetch(url, {
         method: "GET",
-        headers: { ...getAuthHeader() },
+        headers: {
+          ...authHeader,
+        },
         credentials: "include",
       });
 
-      if (!res.ok) return;
-      const data = await res.json();
-      setLiked(data.liked);
-      setLikeCount(data.likeCount);
+      if (res.ok) {
+        const data = await res.json();
+        console.log("서버 응답 데이터:", data);
+        setLiked(data.liked);
+        setLikeCount(data.likeCount);
+      }
     } catch (e) {
       console.error("좋아요 상태 조회 에러:", e);
     }
@@ -236,6 +261,16 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95"
       onClick={(e) => e.target === overlay.current && onDismiss()}
     >
+      {/* --- [추가] 1. 전체 화면 확대 오버레이 --- */}
+      {isZoomed && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/98 flex items-center justify-center cursor-zoom-out animate-in fade-in duration-300"
+          onClick={() => setIsZoomed(false)}
+        >
+          <img src={zoomedImgSrc} alt="Zoomed" className="max-w-[95%] max-h-[95%] object-contain" />
+        </div>
+      )}
+
       <button
         onClick={onDismiss}
         className="fixed top-8 right-10 z-[70] text-white/50 hover:text-white text-2xl"
@@ -247,26 +282,49 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
         <div className="w-full max-w-7xl relative px-4">
           {(title || user?.nickname) && (
             <div className="absolute top-6 left-2 z-[70] text-white">
-              <p className="text-sm font-black">{title}</p>
-              <p className="text-xs text-gray-400">{user?.nickname}</p>
+              <p className="text-sm font-black tracking-tight">{title}</p>
+              <p className="text-xs text-gray-500">{user?.nickname}</p>
             </div>
           )}
 
-          <div className="pt-24 pb-20">
+          {/* --- [변경] handleContentClick을 여기에 연결 --- */}
+          <div className="pt-24 pb-20" onClick={handleContentClick}>
             {children}
 
-            {/* 좋아요 버튼 섹션 */}
-            <div className="mt-16 flex items-center gap-4">
+            {/* 좋아요 버튼 섹션 (기존 Neon 스타일 추천) */}
+            <div className="mt-16">
               <button
-                onClick={toggleLike}
-                className={`px-6 py-2.5 rounded-full border transition-colors flex items-center gap-2 ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleLike();
+                }} // 이벤트 전파 방지
+                className={`relative flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-500 ${
                   liked
-                    ? "bg-white text-black border-white"
-                    : "border-white/20 text-white hover:bg-white/10"
+                    ? "text-rose-500 bg-rose-500/10 shadow-[0_0_25px_rgba(244,63,94,0.3)]"
+                    : "text-white/20 bg-white/5"
                 }`}
               >
-                <span>{liked ? "❤️" : "🤍"}</span>
-                <span className="font-bold">{likeCount}</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill={liked ? "currentColor" : "none"}
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                  />
+                </svg>
+                <span
+                  className={`absolute -right-12 text-xs font-mono ${
+                    liked ? "text-rose-500" : "text-white/20"
+                  }`}
+                >
+                  {likeCount}
+                </span>
               </button>
             </div>
 

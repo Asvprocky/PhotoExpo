@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const BASE_URL = "http://localhost:8080";
+
 // 데이터 타입 정의
 interface UserResponse {
   email: string;
@@ -15,13 +17,33 @@ interface Exhibition {
   exhibitionId: number;
   title: string;
   thumbnailUrl?: string;
+  viewCount?: number;
+  likeCount?: number;
 }
 
 interface Photo {
   photoId: number;
-  photoId_real?: number;
   imageUrl: string;
   title?: string;
+  photoViewCount?: number;
+  photoLikeCount?: number;
+}
+async function getExhibitions() {
+  try {
+    const res = await fetch(`${BASE_URL}/exhibition/all`, { next: { tags: ["exhibition"] } });
+    return res.ok ? res.json() : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+async function getPhotos() {
+  try {
+    const res = await fetch(`${BASE_URL}/photo/all`, { next: { tags: ["photos"] } });
+    return res.ok ? res.json() : [];
+  } catch (error) {
+    return [];
+  }
 }
 
 export default function UserInfoPage() {
@@ -31,6 +53,11 @@ export default function UserInfoPage() {
   const [myExhibitions, setMyExhibitions] = useState<Exhibition[]>([]);
   const [myPhotos, setMyPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 삭제 모달을 위한 상태
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; type: "전시" | "사진" } | null>(
+    null
+  );
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
@@ -42,77 +69,65 @@ export default function UserInfoPage() {
 
     const fetchData = async () => {
       try {
-        // 유저 정보
-        const userRes = await fetch("http://localhost:8080/user/info", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (!userRes.ok) throw new Error("로그인 만료");
+        const headers = { Authorization: `Bearer ${accessToken}` };
+
+        const [userRes, exRes, phRes] = await Promise.all([
+          fetch("http://localhost:8080/user/info", { headers }),
+          fetch("http://localhost:8080/exhibition/my", { headers }),
+          fetch("http://localhost:8080/photo/my", { headers }),
+        ]);
+
+        if (!userRes.ok || !exRes.ok || !phRes.ok) throw new Error("로그인 만료");
+
         const userData = await userRes.json();
         setUserInfo(userData.data ?? userData);
-
-        // 전시 정보
-        const exRes = await fetch("http://localhost:8080/exhibition/my", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (!exRes.ok) throw new Error("로그인 만료");
-        const exData = await exRes.json();
-        setMyExhibitions(exData ?? []);
-
-        // 사진 정보
-        const phRes = await fetch("http://localhost:8080/photo/my", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (!phRes.ok) throw new Error("로그인 만료");
-        const phData = await phRes.json();
-        setMyPhotos(phData ?? []);
+        setMyExhibitions((await exRes.json()) ?? []);
+        setMyPhotos((await phRes.json()) ?? []);
 
         setLoading(false);
       } catch (err) {
         console.error(err);
-        localStorage.removeItem("accessToken"); // 토큰 제거
-        router.replace("/login"); // 로그인 페이지로 이동
+        localStorage.removeItem("accessToken");
+        router.replace("/login");
       }
     };
 
     fetchData();
   }, [router]);
 
-  // 삭제 핸들러
-  const handleDeleteExhibition = async (e: React.MouseEvent, id: number) => {
+  // 모달 열기 핸들러
+  const openDeleteModal = (e: React.MouseEvent, id: number, type: "전시" | "사진") => {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm("이 전시회를 삭제하시겠습니까?")) return;
-
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-
-    const res = await fetch(`http://localhost:8080/exhibition/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (res.ok) {
-      setMyExhibitions((prev) => prev.filter((ex) => ex.exhibitionId !== id));
-      alert("삭제되었습니다.");
-    }
+    setDeleteTarget({ id, type });
   };
 
-  const handleDeletePhoto = async (e: React.MouseEvent, id: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!confirm("이 사진을 삭제하시겠습니까?")) return;
+  // 실제 삭제 처리 로직
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
 
+    const { id, type } = deleteTarget;
     const token = localStorage.getItem("accessToken");
     if (!token) return;
 
-    const res = await fetch(`http://localhost:8080/photo/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const endpoint = type === "전시" ? `exhibition/${id}` : `photo/${id}`;
 
-    if (res.ok) {
-      setMyPhotos((prev) => prev.filter((ph) => ph.photoId !== id));
-      alert("삭제되었습니다.");
+    try {
+      const res = await fetch(`http://localhost:8080/${endpoint}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        if (type === "전시") {
+          setMyExhibitions((prev) => prev.filter((ex) => ex.exhibitionId !== id));
+        } else {
+          setMyPhotos((prev) => prev.filter((ph) => ph.photoId !== id));
+        }
+        setDeleteTarget(null); // 모달 닫기
+      }
+    } catch (err) {
+      console.error("삭제 중 오류 발생:", err);
     }
   };
 
@@ -152,9 +167,6 @@ export default function UserInfoPage() {
               <div className="flex items-center gap-2">✉️ {userInfo?.email}</div>
               <div className="flex items-center gap-2">👤 {userInfo?.username}</div>
             </div>
-            <button className="w-full mt-8 py-3 bg-[#0057ff] text-white font-black rounded-full hover:bg-blue-700 transition-all">
-              프로필 정보 편집
-            </button>
           </div>
 
           {/* 우측 콘텐츠 영역 */}
@@ -197,7 +209,7 @@ export default function UserInfoPage() {
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4">
                       <div className="flex justify-end">
                         <button
-                          onClick={(e) => handleDeleteExhibition(e, ex.exhibitionId)}
+                          onClick={(e) => openDeleteModal(e, ex.exhibitionId, "전시")}
                           className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-full font-bold transition-colors"
                         >
                           삭제
@@ -226,7 +238,7 @@ export default function UserInfoPage() {
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
                       <div className="flex justify-end">
                         <button
-                          onClick={(e) => handleDeletePhoto(e, photo.photoId)}
+                          onClick={(e) => openDeleteModal(e, photo.photoId, "사진")}
                           className="bg-white/20 hover:bg-red-500 text-white text-[10px] px-2 py-1 rounded transition-colors backdrop-blur-md"
                         >
                           삭제
@@ -243,6 +255,42 @@ export default function UserInfoPage() {
           </div>
         </div>
       </div>
+
+      {/*  수정된 커스텀 삭제 확인 모달 */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 transition-opacity"
+          onClick={() => setDeleteTarget(null)} // 배경 클릭 시 닫기
+        >
+          <div
+            className="bg-white rounded-xl p-8 max-w-[340px] w-full mx-4 shadow-lg border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-200"
+            onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 닫힘 방지
+          >
+            <div className="text-center">
+              <h3 className="text-base font-black text-gray-900 mb-2 uppercase tracking-tight">
+                삭제 확인
+              </h3>
+              <p className="text-gray-500 text-xs mb-8 leading-relaxed">
+                선택한 {deleteTarget.type}을(를) 삭제합니다.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleConfirmDelete}
+                className="w-full py-3.5 bg-gray-400 text-white rounded-lg font-black text-xs hover:bg-zinc-800 transition-colors uppercase tracking-widest"
+              >
+                삭제하기
+              </button>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="w-full py-3.5 bg-white border-1 border-gray-300 text-gray-900 rounded-lg font-black text-xs hover:bg-gray-50 transition-colors uppercase tracking-widest"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

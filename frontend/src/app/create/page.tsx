@@ -7,7 +7,7 @@ import { TEMPLATE_CONFIG } from "../constants/templates";
 
 const BASE_URL = "http://localhost:8080";
 
-/* ==============================ㅈ
+/* ==============================
  * 외부 컴포넌트: 개별 설명 블록
  * ============================== */
 const DescriptionBlock = ({ index, subIndex, data, onUpdate, onRemove, currentStyle }: any) => {
@@ -114,9 +114,14 @@ export default function UnifiedUploadPage() {
   const [loading, setLoading] = useState(false);
   const [descMap, setDescMap] = useState<Record<number, { text: string; align: string }[]>>({});
 
+  // 📍 에러 상태 통합 관리
+  const [errors, setErrors] = useState({
+    title: false,
+    file: false,
+  });
+
   const currentStyle = TEMPLATE_CONFIG[template] || TEMPLATE_CONFIG.default;
 
-  // 모드 해제 시 기본값으로
   useEffect(() => {
     if (!isExhibitionMode) {
       setTemplate("default");
@@ -132,29 +137,27 @@ export default function UnifiedUploadPage() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    // 사진이 추가되면 에러 상태 해제
+    setErrors((prev) => ({ ...prev, file: false }));
+
     const fileArray = Array.from(files);
     const newPreviewUrls = fileArray.map((f) => URL.createObjectURL(f));
-    // --- [수정된 유효성 로직] ---
+
     if (!isExhibitionMode) {
-      // 1. 애초에 여러 장을 선택해서 가져온 경우
       if (fileArray.length > 1) {
         alert("일반 사진 모드에서는 1장의 사진만 올릴 수 있습니다.");
         e.target.value = "";
         return;
       }
-
-      // 2. 이미 사진이 있는데 또 올리려고 하는 경우 (사이드바, InsertZone 모두 포함)
       if (selectedFiles.length >= 1) {
-        alert(
-          "일반 모드에서는 사진을 더 추가할 수 없습니다. 기존 사진을 삭제하거나 전시회 모드를 켜주세요."
-        );
+        alert("일반 모드에서는 사진을 더 추가할 수 없습니다.");
         e.target.value = "";
-        insertTargetRef.current = null; // 타겟 초기화
+        insertTargetRef.current = null;
         return;
       }
     }
-    const targetIdx = insertTargetRef.current;
 
+    const targetIdx = insertTargetRef.current;
     if (targetIdx !== null) {
       setSelectedFiles((prev) => {
         const next = [...prev];
@@ -166,7 +169,6 @@ export default function UnifiedUploadPage() {
         next.splice(targetIdx, 0, ...newPreviewUrls);
         return next;
       });
-
       setDescMap((prev) => {
         const newMap: any = {};
         const moveCount = fileArray.length;
@@ -181,37 +183,44 @@ export default function UnifiedUploadPage() {
       setSelectedFiles((prev) => [...prev, ...fileArray]);
       setPreviews((prev) => [...prev, ...newPreviewUrls]);
     }
-
     insertTargetRef.current = null;
     e.target.value = "";
   };
 
+  const handleToggleExhibitionMode = (checked: boolean) => {
+    if (!checked && selectedFiles.length > 1) {
+      const ok = confirm(
+        "일반 사진 모드에서는 사진을 1장만 사용할 수 있습니다.\n계속하시겠습니까?"
+      );
+      if (!ok) return;
+      setSelectedFiles((prev) => prev.slice(0, 1));
+      setPreviews((prev) => prev.slice(0, 1));
+      setDescMap((prev) => {
+        const next: Record<number, any[]> = {};
+        if (prev[0]) next[0] = prev[0];
+        if (prev[1]) next[1] = prev[1];
+        return next;
+      });
+    }
+    setIsExhibitionMode(checked);
+  };
+
   const handleRemoveFile = (index: number) => {
     URL.revokeObjectURL(previews[index]);
-
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setPreviews((prev) => prev.filter((_, i) => i !== index));
-
     setDescMap((prev) => {
       const newMap: Record<number, any[]> = {};
-
       const upperTexts = prev[index] || [];
       const lowerTexts = prev[index + 1] || [];
-
-      // 핵심: 아래 텍스트를 위로 병합
       if (upperTexts.length || lowerTexts.length) {
         newMap[index] = [...upperTexts, ...lowerTexts];
       }
-
       Object.entries(prev).forEach(([key, val]) => {
         const k = Number(key);
-        if (k < index) {
-          newMap[k] = val;
-        } else if (k > index + 1) {
-          newMap[k - 1] = val;
-        }
+        if (k < index) newMap[k] = val;
+        else if (k > index + 1) newMap[k - 1] = val;
       });
-
       return newMap;
     });
   };
@@ -243,13 +252,22 @@ export default function UnifiedUploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedFiles.length === 0) return alert("사진을 추가해주세요.");
+
+    // 📍 통합 유효성 검사
+    const newErrors = {
+      title: !title.trim(),
+      file: selectedFiles.length === 0,
+    };
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some((err) => err)) {
+      if (newErrors.file) window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
 
     setLoading(true);
     try {
       let exhibitionId = null;
-
-      // [중요 수정] 모든 모드에서 정렬 정보를 포함한 JSON 구조를 저장.
       const allContents = JSON.stringify(descMap);
 
       if (isExhibitionMode) {
@@ -263,18 +281,15 @@ export default function UnifiedUploadPage() {
       }
 
       const formData = new FormData();
-
-      // [중요 수정] 이제 description에 단순 문자열이 아닌 JSON 문자열을 넣음.
       const photoDto = JSON.stringify({
         exhibitionId,
         title,
-        description: allContents, // combinedDesc 대신 JSON 구조인 allContents를 넣음
+        description: allContents,
       });
 
       formData.append("dto", new Blob([photoDto], { type: "application/json" }));
       selectedFiles.forEach((file) => formData.append("image", file));
 
-      // 4. 실제 사진 업로드 요청
       const photoRes = await authFetch(`${BASE_URL}/photo/upload`, {
         method: "POST",
         body: formData,
@@ -284,17 +299,12 @@ export default function UnifiedUploadPage() {
       const photoResult = await photoRes.json();
       const uploadedPhotoId = photoResult[0]?.photoId;
 
-      alert("전시회가 성공적으로 개최되었습니다!");
       if (exhibitionId) {
         router.push("/");
-        setTimeout(() => {
-          router.push(`/exhibition/${exhibitionId}`);
-        }, 300); // 0.3초 후 이동
+        setTimeout(() => router.push(`/exhibition/${exhibitionId}`), 300);
       } else {
         router.push("/");
-        setTimeout(() => {
-          router.push(`/photo/${uploadedPhotoId}`);
-        }, 300);
+        setTimeout(() => router.push(`/photo/${uploadedPhotoId}`), 300);
       }
     } catch (error) {
       console.error(error);
@@ -303,10 +313,11 @@ export default function UnifiedUploadPage() {
       setLoading(false);
     }
   };
+
   return (
-    <div className="pt-5 pb-20 min-h-screen bg-gray-100 font-bold">
+    <div className="pt-24 pb-20 min-h-screen bg-gray-100 font-bold">
       <div className="max-w-[1400px] mx-auto px-6 flex md:flex-col lg:flex-row gap-8">
-        {/* --- 왼쪽 영역 --- */}
+        {/* --- 왼쪽 영역: 편집 캔버스 --- */}
         <div
           className={`flex-1 rounded-none border border-gray-200 shadow-sm min-h-[700px] flex flex-col relative transition-all duration-500 overflow-hidden ${currentStyle.container}`}
         >
@@ -366,80 +377,145 @@ export default function UnifiedUploadPage() {
           </div>
         </div>
 
-        {/* --- 오른쪽 사이드바 --- */}
-        <div className="w-full lg:w-[320px] bg-white border border-gray-200 p-6 h-fit sticky top-20">
-          <h1 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-tighter italic">
-            Curation
-          </h1>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* input을 div 밖으로 완전히 뺐음 (이벤트 버블링 차단) */}
-            <div
-              onClick={() => {
-                insertTargetRef.current = null;
-                fileInputRef.current?.click();
-              }}
-              className="p-4 border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer text-center"
-            >
-              <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                + Upload
-              </span>
-            </div>
+        {/* --- 오른쪽 사이드바: 큐레이션 도구 --- */}
+        <div className="w-full lg:w-[320px] h-fit sticky top-24 bg-white border border-gray-200 p-7 shadow-sm">
+          <div className="mb-8 pb-4 border-b border-gray-50">
+            <h2 className="text-sm text-gray-900 uppercase tracking-tight">Curation</h2>
+          </div>
 
-            {/* 인풋은 div 바깥에 두어 부모의 onClick을 방해하지 않음 */}
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleFileChange}
-              ref={fileInputRef}
-              className="hidden"
-            />
-
-            <label className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 transition-all">
-              <input
-                type="checkbox"
-                checked={isExhibitionMode}
-                onChange={(e) => setIsExhibitionMode(e.target.checked)}
-                className="w-5 h-5 accent-blue-600"
-              />
-              <span className="text-sm font-bold">전시회 생성</span>
-            </label>
-
-            {isExhibitionMode && (
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-                {["default", "classic", "grey", "art"].map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTemplate(t)}
-                    className={`py-3 text-[10px] font-black border-2 transition-all uppercase ${
-                      template === t
-                        ? "border-blue-600 bg-blue-50 text-blue-600"
-                        : "border-gray-100 text-gray-400"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
+          <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+            {/* 1. 업로드 섹션 */}
+            <div className="space-y-3 relative mb-10">
+              <button
+                type="button"
+                onClick={() => {
+                  insertTargetRef.current = null;
+                  fileInputRef.current?.click();
+                }}
+                className={`w-full h-28 border-1 rounded-2xl bg-gray-50 hover:bg-white transition-all flex flex-col items-center justify-center gap-2 group ${
+                  errors.file ? "border-gray-400" : "border-gray-100"
+                }`}
+              >
+                <span
+                  className={`text-2xl transition-colors ${
+                    errors.file ? "text-rose-400" : "text-gray-300 group-hover:text-black"
+                  }`}
+                >
+                  +
+                </span>
+                <span
+                  className={`text-[10px] font-black uppercase tracking-widest ${
+                    errors.file ? "text-gray-700" : "text-gray-700 group-hover:text-black"
+                  }`}
+                >
+                  Add Photos
+                </span>
+              </button>
+              {/* 📍 사진 에러 메시지 */}
+              <div
+                className={`absolute -bottom-8 left-2 transition-all duration-300 ${
+                  errors.file
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 -translate-y-1 pointer-events-none"
+                }`}
+              >
+                <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest">
+                  * At least one photo is required
+                </p>
               </div>
-            )}
-
-            <div className="space-y-4 pt-4 border-t border-gray-100">
               <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-3 border-2 border-gray-100 focus:border-blue-600 outline-none text-sm font-bold"
-                placeholder="TITLE"
-                required
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                className="hidden"
               />
             </div>
 
+            {/* 2. 전시회 설정 */}
+            <div className="p-5 bg-gray-50 rounded-2xl space-y-4 overflow-hidden transition-all duration-500">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest">
+                  Exhibition Mode
+                </span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isExhibitionMode}
+                    onChange={(e) => handleToggleExhibitionMode(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-gray-400 transition-all after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full"></div>
+                </label>
+              </div>
+              <div
+                className={`grid transition-all duration-500 overflow-hidden ${
+                  isExhibitionMode
+                    ? "grid-rows-[1fr] opacity-100 pt-4 border-t border-gray-100"
+                    : "grid-rows-[0fr] opacity-0 pt-0"
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="grid grid-cols-2 gap-2 pb-1">
+                    {["default", "classic", "grey", "art"].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setTemplate(t)}
+                        className={`py-2 rounded-lg text-[10px] font-bold border-2 transition-all uppercase ${
+                          template === t
+                            ? "bg-white border-gray-700 text-gray-700 shadow-sm"
+                            : "bg-transparent border-transparent text-gray-700 hover:text-gray-400"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. 제목 입력 */}
+            <div className="space-y-3 relative mb-10">
+              <label className="block text-[11px] font-black text-gray-700 uppercase tracking-widest ml-2 mb-2">
+                Title
+              </label>
+              <div className="relative">
+                <input
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    if (e.target.value.trim()) setErrors((prev) => ({ ...prev, title: false }));
+                  }}
+                  className={`w-full bg-white border p-4 rounded-xl outline-none text-xs font-bold transition-all shadow-sm placeholder:text-gray-200 uppercase ${
+                    errors.title ? "border-gray-400" : "border-gray-100 focus:border-black"
+                  }`}
+                  placeholder="Title"
+                />
+                {/* 📍 제목 에러 메시지 */}
+                <div
+                  className={`absolute -bottom-6 left-2 transition-all duration-300 ${
+                    errors.title
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 -translate-y-1 pointer-events-none"
+                  }`}
+                >
+                  <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest">
+                    * Title is required to publish
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. 발행 버튼 */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-black text-white text-xs font-black hover:bg-blue-700 transition-all uppercase tracking-widest"
+              className="w-full py-4 text-black text-[11px] font-black rounded-xl hover:bg-gray-300 transition-all uppercase tracking-[0.2em] shadow-lg shadow-gray-200 active:scale-[0.98] disabled:bg-gray-100"
             >
-              Publish Exhibition
+              {loading ? "Publishing..." : "Publish"}
             </button>
           </form>
         </div>

@@ -32,7 +32,7 @@ export default function RootLayout({
     <html>
       <body>
         <Navbar />
-        <main className="pt-14 relative">
+        <main>
           {children}
           {modal}
         </main>
