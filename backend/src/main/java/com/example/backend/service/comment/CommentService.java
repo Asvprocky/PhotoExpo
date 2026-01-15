@@ -59,7 +59,9 @@ public class CommentService {
                 .isDeleted(false)
                 .build();
 
-        return CommentResponseDTO.fromEntity(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+
+        return CommentResponseDTO.fromEntity(savedComment, true);
     }
 
     /**
@@ -70,10 +72,20 @@ public class CommentService {
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new EntityNotFoundException("Photo not found"));
 
+        String email = null;
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            email = SecurityContextHolder.getContext().getAuthentication().getName();
+        }
+        String finalEmail = email;
+
+
         return commentRepository
                 .findByPhotoAndIsDeletedFalseOrderByCreatedAtDesc(photo)
                 .stream()
-                .map(CommentResponseDTO::fromEntity)
+                .map(comment -> {
+                    boolean isMine = comment.getUser().getEmail().equals(finalEmail);
+                    return CommentResponseDTO.fromEntity(comment, isMine);
+                })
                 .toList();
 
     }
@@ -93,7 +105,7 @@ public class CommentService {
             throw new IllegalArgumentException("본인만 수정 할 수 있습니다");
         }
         comment.updateComment(dto);
-        return CommentResponseDTO.fromEntity(commentRepository.save(comment));
+        return CommentResponseDTO.fromEntity(comment, true);
     }
 
     /**
