@@ -33,16 +33,21 @@ public class PhotoLikesController {
             @PathVariable Long photoId,
             Authentication authentication
     ) {
-        UserDetails userDetails = null;
+        String email = null;
 
-        if (authentication != null
-                && authentication.isAuthenticated()
-                && authentication.getPrincipal() instanceof UserDetails) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
 
-            userDetails = (UserDetails) authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                email = ((UserDetails) principal).getUsername();
+            } else if (principal instanceof String) {
+                email = (String) principal;
+            }
         }
 
-        return photoLikesService.getLikeStatus(photoId, userDetails);
+        // Service의 getLikeStatus 메서드가 UserDetails 대신 Email(String)을 받도록 수정하거나,
+        // 아래처럼 이메일을 기반으로 좋아요 상태를 조회하도록 변경하세요.
+        return photoLikesService.getLikeStatus(photoId, email);
     }
 
 }

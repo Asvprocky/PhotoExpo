@@ -11,7 +11,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,15 +65,15 @@ public class PhotoLikesService {
      * 좋아요 조회
      */
     @Transactional(readOnly = true)
-    public PhotoLikesResponseDTO getLikeStatus(Long photoId, UserDetails userDetails) {
+    public PhotoLikesResponseDTO getLikeStatus(Long photoId, String email) {
         Photo photo = photoRepository.findById(photoId)
                 .orElseThrow(() -> new EntityNotFoundException("Photo not found"));
 
         long likeCount = photoLikesRepository.countByPhoto(photo);
 
         boolean liked = false;
-        if (userDetails != null) {
-            Users user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        if (email != null) {
+            Users user = userRepository.findByEmail(email).orElseThrow();
             liked = photoLikesRepository.existsByPhotoAndUser(photo, user);
         }
 
