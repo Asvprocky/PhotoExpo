@@ -110,8 +110,6 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
   };
   // 댓글 삭제
   const handleDeleteComment = async (commentId: number) => {
-    if (!confirm("댓글을 삭제하시겠습니까?")) return;
-
     try {
       const res = await fetch(`${API_BASE_URL}/comment/${commentId}`, {
         method: "DELETE",
@@ -261,7 +259,7 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95"
       onClick={(e) => e.target === overlay.current && onDismiss()}
     >
-      {/* --- [추가] 1. 전체 화면 확대 오버레이 --- */}
+      {/* --- 전체 화면 확대 오버레이 --- */}
       {isZoomed && (
         <div
           className="fixed inset-0 z-[100] bg-black/98 flex items-center justify-center cursor-zoom-out animate-in fade-in duration-300"
@@ -278,7 +276,7 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
         ✕
       </button>
 
-      <div className="w-full h-full overflow-y-auto flex justify-center">
+      <div className="w-full h-full overflow-y-auto flex justify-center no-scrollbar">
         <div className="w-full max-w-7xl relative px-4">
           {(title || user?.nickname) && (
             <div className="absolute top-6 left-2 z-[70] text-white">
@@ -287,22 +285,27 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
             </div>
           )}
 
-          {/* --- [변경] handleContentClick을 여기에 연결 --- */}
+          {/* --- handleContentClick 연결 --- */}
           <div className="pt-24 pb-20" onClick={handleContentClick}>
             {children}
 
-            {/* 좋아요 버튼 섹션 (기존 Neon 스타일 추천) */}
-            <div className="mt-16">
+            {/* 좋아요 버튼 섹션: 중앙 배치 및 스타일 리팩토링 */}
+            <div className="mt-24 mb-16 flex flex-col items-center justify-center gap-4">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleLike();
-                }} // 이벤트 전파 방지
-                className={`relative flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-500 ${
-                  liked
-                    ? "text-rose-500 bg-rose-500/10 shadow-[0_0_25px_rgba(244,63,94,0.3)]"
-                    : "text-white/20 bg-white/5"
-                }`}
+                }}
+                /* - liked 상태일 때: Gray 300 배경에 검정 아이콘/글자 (댓글 네임택과 통일)
+      - 평상시: 투명 배경에 얇은 테두리
+    */
+                className={`group flex items-center gap-3 px-6 py-3 rounded-full border transition-all duration-500 ease-in-out
+      ${
+        liked
+          ? "bg-gray-300 border-gray-300 text-black shadow-[0_0_30px_rgba(209,213,219,0.2)]"
+          : "bg-transparent border-white/30 text-white/30 hover:border-white/30 hover:text-white"
+      }
+    `}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -310,7 +313,9 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
                   viewBox="0 0 24 24"
                   strokeWidth="2"
                   stroke="currentColor"
-                  className="w-6 h-6"
+                  className={`w-5 h-5 transition-transform duration-500 ${
+                    liked ? "scale-110" : "group-hover:scale-110"
+                  }`}
                 >
                   <path
                     strokeLinecap="round"
@@ -318,82 +323,99 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
                     d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
                   />
                 </svg>
-                <span
-                  className={`absolute -right-12 text-xs font-mono ${
-                    liked ? "text-rose-500" : "text-white/20"
-                  }`}
-                >
-                  {likeCount}
+
+                <span className="text-[11px] font-black uppercase tracking-[0.2em]">{liked}</span>
+
+                {/* 구분선 */}
+                <div className={`w-px h-3 ${liked ? "bg-black/20" : "bg-white/20"}`} />
+
+                {/* 카운트 숫자 */}
+                <span className="text-[11px] font-bold tracking-tighter">
+                  {likeCount.toString().padStart(2, "0")}
                 </span>
               </button>
             </div>
 
             {/* 댓글 섹션 */}
             {isPhoto && (
-              <div className="mt-12 border-t border-white/10 pt-10">
-                <h3 className="text-white font-bold mb-6">댓글 {comments.length}</h3>
+              <div className="mt-20  border-white/10 pt-4 max-w-3xl mx-auto">
+                {/* 1. 헤더 영역 */}
+                <div className="flex items-center gap-3 mb-10 px-2">
+                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-pulse" />
+                  <h3 className="text-white text-[12px] uppercase tracking-[0.3em]">Comment</h3>
+                </div>
 
-                <form onSubmit={handleCommentSubmit} className="flex gap-3 mb-10">
-                  <input
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="댓글을 남겨보세요"
-                    className="flex-1 bg-white/5 border border-white/10 px-4 py-3 text-sm rounded-lg text-white focus:outline-none focus:border-white/40"
-                  />
-                  <button className="bg-white text-black px-8 rounded-lg font-bold hover:bg-gray-200 transition-colors">
-                    게시
-                  </button>
+                {/* 2. 댓글 작성 폼 (Gray 300 강조 스타일) */}
+                <form onSubmit={handleCommentSubmit} className="mb-16 px-2">
+                  <div className="flex gap-2">
+                    <input
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Type your message..."
+                      className="flex-1 bg-white/7  border-white/20 px-5 py-3 text-sm text-white  focus:outline-none focus:border-gray-300 transition-all"
+                    />
+                    <button className=" text-white px-6 py-3 rounded-lg text-[11px] uppercase tracking-widest hover:text-gray-300 transition-colors">
+                      Send
+                    </button>
+                  </div>
                 </form>
 
-                <div className="space-y-8">
+                {/* 3. 댓글 리스트*/}
+                <div className="space-y-4 px-2">
                   {comments.length > 0 ? (
                     comments.map((c) => (
-                      <div key={c.id} className="flex gap-4 group relative">
-                        {" "}
-                        {/* group과 relative 추가 */}
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex-shrink-0" />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            {" "}
-                            {/* justify-between 추가 */}
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-bold text-white">{c.nickname}</span>
-                              <span className="text-[10px] text-gray-500">
-                                {new Date(c.createdAt).toLocaleDateString()}
+                      <div
+                        key={c.id}
+                        className="group relative bg-gray-300 p-5 transition-all shadow-xl"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            {/* 아바타 대용 원형 */}
+                            <div className="w-6 h-6 rounded-full bg-black/10 flex items-center justify-center">
+                              <span className="text-[10px] font-bold text-black/40">
+                                {c.nickname.charAt(0)}
                               </span>
                             </div>
-                            {/* 삭제 버튼: 아이콘 형태 */}
-                            {c.mine && (
-                              <button
-                                onClick={() => handleDeleteComment(c.id)}
-                                className="opacity-0 group-hover:opacity-100 transition-all p-1 text-gray-500 hover:text-red-400"
-                                title="댓글 삭제"
-                              >
-                                {/* 쓰레기통 또는 X 아이콘 (SVG) */}
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M3 6h18" />
-                                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                </svg>
-                              </button>
-                            )}
+                            <span className="text-[13px] font-bold text-black uppercase tracking-tight">
+                              {c.nickname}
+                            </span>
+                            <span className="text-[10px]  text-black/40">
+                              {new Date(c.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
-                          <p className="text-sm text-gray-300 leading-relaxed pr-6">{c.content}</p>
+
+                          {/* 삭제 버튼 */}
+                          {c.mine && (
+                            <button
+                              onClick={() => handleDeleteComment(c.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-all p-1 text-black/20 hover:text-white"
+                            >
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                              >
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
                         </div>
+
+                        {/* 본문 텍스트*/}
+                        <p className="text-[14px] text-neutral-800 leading-relaxed font-medium pl-1">
+                          {c.content}
+                        </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-sm py-10 text-center">댓글을 남겨보세요</p>
+                    <div className="py-20 text-center border border-white/10 rounded-xl">
+                      <p className="text-[11px] text-white/30 uppercase tracking-[0.4em]">
+                        No messages
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>

@@ -58,7 +58,7 @@ export default async function PhotoDetailPage({ params }: { params: Promise<{ id
           {descMap[0].map((item, idx) => (
             <div
               key={`top-${idx}`}
-              className={`flex w-full mb-4 border-b border-white/10 ${getJustifyClass(item.align)}`}
+              className={`flex w-full mb-4 border-white/10 ${getJustifyClass(item.align)}`}
             >
               <div
                 className={`text-lg leading-relaxed text-white/80 font-medium whitespace-pre-wrap ${item.align}`}
@@ -70,7 +70,7 @@ export default async function PhotoDetailPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      {/* 2. 이미지 영역: bg-gray-50 제거하여 배경색 차이로 인한 여백 차단 */}
+      {/* 2. 이미지 영역: 여백 차단 */}
       <div className="w-full flex justify-center">
         <img
           src={`${data.imageUrl}?v=1`}
@@ -87,7 +87,7 @@ export default async function PhotoDetailPage({ params }: { params: Promise<{ id
           {descMap[1].map((item, idx) => (
             <div
               key={`bottom-${idx}`}
-              className={`flex w-full  border-b border-white/10 ${getJustifyClass(item.align)}`}
+              className={`flex w-full  border-white/10 ${getJustifyClass(item.align)}`}
             >
               <div
                 className={`text-lg leading-relaxed text-white/80 font-medium whitespace-pre-wrap ${item.align}`}

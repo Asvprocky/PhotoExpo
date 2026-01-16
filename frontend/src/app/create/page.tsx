@@ -380,7 +380,7 @@ export default function UnifiedUploadPage() {
         {/* --- 오른쪽 사이드바: 큐레이션 도구 --- */}
         <div className="w-full lg:w-[320px] h-fit sticky top-24 bg-white border border-gray-200 p-7 shadow-sm">
           <div className="mb-8 pb-4 border-b border-gray-50">
-            <h2 className="text-sm text-gray-900 uppercase tracking-tight">Curation</h2>
+            <h2 className="text-sm text-gray-900 uppercase tracking-widest">Curation</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8" noValidate>
@@ -437,7 +437,7 @@ export default function UnifiedUploadPage() {
             <div className="p-5 bg-gray-50 rounded-2xl space-y-4 overflow-hidden transition-all duration-500">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest">
-                  Exhibition Mode
+                  Exhibition
                 </span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input

@@ -164,7 +164,7 @@ export default function UserInfoPage() {
             </div>
             <h1 className="text-2xl font-black text-gray-900 mb-2">{userInfo?.nickname}</h1>
             <div className="space-y-4 text-sm font-bold text-gray-600">
-              <div className="flex items-center gap-2">✉️ {userInfo?.email}</div>
+              {/*<div className="flex items-center gap-2">✉️ {userInfo?.email}</div>*/}
               <div className="flex items-center gap-2">👤 {userInfo?.username}</div>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function UserInfoPage() {
                         src={ex.thumbnailUrl}
                         alt={ex.title}
                         fill
-                        className="object-cover transition-all group-hover:scale-105"
+                        className="object-cover transition-all"
                         crossOrigin="anonymous"
                       />
                     )}
@@ -210,7 +210,7 @@ export default function UserInfoPage() {
                       <div className="flex justify-end">
                         <button
                           onClick={(e) => openDeleteModal(e, ex.exhibitionId, "전시")}
-                          className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-full font-bold transition-colors"
+                          className="bg-white/20 hover:bg-red-500 text-white text-xs px-3 py-1.5 rounded-full font-bold transition-colors"
                         >
                           삭제
                         </button>
@@ -232,7 +232,7 @@ export default function UserInfoPage() {
                       src={photo.imageUrl}
                       alt="My Photo"
                       fill
-                      className="object-cover transition-all group-hover:scale-110"
+                      className="object-cover transition-all"
                       crossOrigin="anonymous"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { url } from "inspector";
 
 const BASE_URL = "http://localhost:8080";
 
@@ -26,13 +27,13 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#fafafa] text-[#1a1a1a] selection:bg-black selection:text-white">
-      <section className="relative h-[60vh] min-h-[500px] w-full flex flex-col justify-center items-center overflow-hidden bg-[#8c8c8c]">
+      <section className="relative h-[60vh] min-h-[500px] w-full flex flex-col justify-center items-center overflow-hidden">
         {/* 1. 배경 */}
         {/* mix-blend-overlay를 사용하여 회색 배경과 자연스럽게 합성 */}
         <div
-          className="absolute inset-0 pointer-events-none z-0 opacity-80 mix-blend-multiply grayscale"
+          className="absolute inset-0 pointer-events-none z-0 opacity-80 mix-blend-multiply"
           style={{
-            backgroundImage: `url("https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")`, // 실제 콘크리트 이미지 URL 예시
+            backgroundImage: "url('/hero2.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -51,7 +52,7 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* 3. 하단 장식: 아주 얇은 라인 하나*/}
+        {/* 3. 하단 장식: 얇은 라인 하나*/}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-16 bg-white/30 z-10"></div>
       </section>
 
@@ -128,10 +129,10 @@ export default async function Home() {
                     src={`${photo.imageUrl}?v=1`}
                     alt={photo.title}
                     crossOrigin="anonymous"
-                    className="w-full h-auto opacity-100 transition-transform duration-[1.5s] ease-out group-hover:scale-[1.02] block"
+                    className="w-full h-auto opacity-100 transition-transform duration-[1.5s] ease-out block"
                   />
 
-                  {/* --- [핵심] 호버 시 나타나는 통합 정보창 --- */}
+                  {/* ---  호버 시 나타나는 통합 정보창 --- */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6">
                     {/* 상단: 타이틀 */}
                     <div className="mb-2  group-hover:translate-y-0 transition-transform ">
