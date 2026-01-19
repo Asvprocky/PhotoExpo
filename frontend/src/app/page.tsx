@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { url } from "inspector";
 
 const BASE_URL = "http://localhost:8080";
 
@@ -85,6 +84,25 @@ export default async function Home() {
                     <span className="text-black bg-white/90 px-6 py-3 text-[9px] uppercase tracking-[0.4em] backdrop-blur-sm">
                       VIEW
                     </span>
+                    {/* 2. 우측 하단 조회수 정보 */}
+                    <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-white/90  px-3 py-1.5 rounded-full ">
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      <span className="text-[9px] font-mono font-bold tracking-tighter">
+                        {ex.exhibitionViewCount?.toLocaleString() ?? "0"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 

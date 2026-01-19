@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface ModalProps {
@@ -9,6 +10,7 @@ interface ModalProps {
   photoId?: number; // optional
   exhibitionId?: number;
   user?: {
+    userId: number;
     nickname: string;
     email: string;
   };
@@ -16,6 +18,7 @@ interface ModalProps {
 
 interface Comment {
   id: number;
+  userId: number;
   nickname: string;
   content: string;
   createdAt: string;
@@ -59,6 +62,18 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
   const [comment, setComment] = useState("");
 
   const onDismiss = () => router.back();
+
+  // 유저 정보 요청시 모달 닫기
+  const handleUserClick = (targetUserId: number) => {
+    if (!targetUserId) return;
+
+    // 1. 스크롤 잠금 강제 해제
+    document.body.style.overflow = "auto";
+
+    // 2. [변경] router.push 대신 window.location.href 사용
+    // 이렇게 하면 Next.js의 라우팅 꼬임 현상을 무시하고 강제로 유저 페이지를 깨끗하게 띄웁니다.
+    window.open(`/users/${targetUserId}`, "_blank", "noopener,noreferrer");
+  };
 
   // ESC 키로 확대창 또는 모달 닫기
   useEffect(() => {
@@ -280,8 +295,23 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
         <div className="w-full max-w-7xl relative px-4">
           {(title || user?.nickname) && (
             <div className="absolute top-6 left-2 z-[70] text-white">
-              <p className="text-sm font-black tracking-tight">{title}</p>
-              <p className="text-xs text-gray-500">{user?.nickname}</p>
+              <p className="text-m font-black tracking-tight">{title}</p>
+              {user?.userId ? (
+                <button
+                  onClick={() => handleUserClick(user.userId)} // Link 대신 button 사용
+                  className="hover:text-gray-300 transition-colors text-left"
+                >
+                  <p className="text-xs cursor-pointer transition-all duration-300 hover:underline underline-offset-4 decoration-white">
+                    @{user?.nickname}
+                  </p>
+                </button>
+              ) : (
+                // 유저 ID가 없을 경우 (비로그인 또는 데이터 부재 시)
+                <>
+                  <p className="text-sm font-black tracking-tight">{title}</p>
+                  <p className="text-xs text-gray-500">{user?.nickname}</p>
+                </>
+              )}
             </div>
           )}
 
@@ -296,16 +326,14 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
                   e.stopPropagation();
                   toggleLike();
                 }}
-                /* - liked 상태일 때: Gray 300 배경에 검정 아이콘/글자 (댓글 네임택과 통일)
-      - 평상시: 투명 배경에 얇은 테두리
-    */
+                /* - liked 상태일 때: Gray 300 배경에 검정 아이콘/글자 (댓글 네임택과 통일)- 평상시: 투명 배경에 얇은 테두리 */
                 className={`group flex items-center gap-3 px-6 py-3 rounded-full border transition-all duration-500 ease-in-out
-      ${
-        liked
-          ? "bg-gray-300 border-gray-300 text-black shadow-[0_0_30px_rgba(209,213,219,0.2)]"
-          : "bg-transparent border-white/30 text-white/30 hover:border-white/30 hover:text-white"
-      }
-    `}
+                  ${
+                    liked
+                      ? "bg-gray-300 border-gray-300 text-black shadow-[0_0_30px_rgba(209,213,219,0.2)]"
+                      : "bg-transparent border-white/30 text-white/30 hover:border-white/30 hover:text-white"
+                  }
+                      `}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -376,9 +404,17 @@ export default function Modal({ children, title, user, photoId, exhibitionId }: 
                                 {c.nickname.charAt(0)}
                               </span>
                             </div>
-                            <span className="text-[13px] font-bold text-black uppercase tracking-tight">
-                              {c.nickname}
-                            </span>
+                            <button
+                              onClick={() => {
+                                console.log("댓글 유저 클릭 ID:", c.userId);
+                                handleUserClick(c.userId);
+                              }}
+                              className="flex items-center gap-3 group/user text-left"
+                            >
+                              <span className="text-[13px] font-bold text-black uppercase group-hover/user:underline">
+                                {c.nickname}
+                              </span>
+                            </button>
                             <span className="text-[10px]  text-black/40">
                               {new Date(c.createdAt).toLocaleDateString()}
                             </span>

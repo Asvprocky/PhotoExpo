@@ -6,6 +6,7 @@ import Image from "next/image";
 
 // 데이터 타입 정의
 interface UserResponse {
+  userId: number;
   email: string;
   username: string;
   nickname: string;
@@ -73,7 +74,7 @@ export default function ProfileDropdown() {
         {/* 메뉴 리스트 */}
         <div className="py-2">
           <Link
-            href="/user/info"
+            href={userInfo ? `/users/${userInfo.userId}` : "#"}
             className="group/item flex items-center justify-between px-6 py-3 text-xs font-bold text-gray-600 hover:text-black hover:bg-gray-50 transition-colors"
           >
             <span>프로필 관리</span>
