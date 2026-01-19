@@ -20,6 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
+
     /**
      * 자체 로그인 유저 존재 확인
      */
@@ -43,17 +44,18 @@ public class UserController {
     }
 
     /**
-     * 유저 정보
+     * 내 정보
      */
     @GetMapping(value = "/info")
     public UserResponseDTO readUserApi() {
         return userService.readUser();
     }
 
+
     /**
      * 유저 수정(자체 로그인만)
      */
-    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/update", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Long> updateUserApi(
             @Validated(UserRequestDTO.updateGroup.class) @RequestBody UserRequestDTO dto
     ) throws AccessDeniedException {

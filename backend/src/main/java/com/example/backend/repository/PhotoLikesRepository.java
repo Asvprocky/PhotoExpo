@@ -14,4 +14,6 @@ public interface PhotoLikesRepository extends JpaRepository<PhotoLikes, Long> {
     Long countByPhoto(Photo photo);
 
     boolean existsByPhotoAndUser(Photo photo, Users user);
+
+    long countByPhotoPhotoId(Long photoId);
 }

@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record CommentResponseDTO(
         Long id,
+        Long userId,
         String nickname,
         String content,
         LocalDateTime createdAt,
@@ -16,6 +17,7 @@ public record CommentResponseDTO(
     public static CommentResponseDTO fromEntity(Comment comment, boolean mine) {
         return new CommentResponseDTO(
                 comment.getCommentId(),
+                comment.getUser().getUserId(),
                 comment.getUser().getNickname(), // 핵심
                 comment.getContent(),
                 comment.getCreatedAt(),

@@ -140,7 +140,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
     }
 
     /**
-     * 유저 정보 조회
+     * 내 정보 조회
      */
     @Transactional(readOnly = true)
     public UserResponseDTO readUser() {

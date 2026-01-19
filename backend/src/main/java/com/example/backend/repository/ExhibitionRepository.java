@@ -33,4 +33,14 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             WHERE e.exhibitionId = :exhibitionId
             """)
     Optional<Exhibition> findByIdWithPhotos(@Param("exhibitionId") Long exhibitionId);
+
+    /**
+     * 유저 페이지 조회용
+     *
+     * @param userId
+     * @return
+     */
+    List<Exhibition> findByUserUserIdOrderByCreatedAtDesc(Long userId);
+
+    long countByUserUserId(Long userId);
 }

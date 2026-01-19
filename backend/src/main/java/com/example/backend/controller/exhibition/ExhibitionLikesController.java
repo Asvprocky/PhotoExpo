@@ -4,7 +4,7 @@ import com.example.backend.dto.response.ExhibitionLikesResponseDTO;
 import com.example.backend.service.exhibition.ExhibitionLikesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +25,22 @@ public class ExhibitionLikesController {
     @GetMapping
     public ResponseEntity<ExhibitionLikesResponseDTO> getLikeStatus(
             @PathVariable Long exhibitionId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            Authentication authentication) {
         
-        ExhibitionLikesResponseDTO likes = exhibitionLikesService.getLikeStatus(exhibitionId, userDetails);
+        String email = null;
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+
+            if (principal instanceof UserDetails) {
+                email = ((UserDetails) principal).getUsername();
+            } else if (principal instanceof String) {
+                email = (String) principal;
+            }
+        }
+
+
+        ExhibitionLikesResponseDTO likes = exhibitionLikesService.getLikeStatus(exhibitionId, email);
         return ResponseEntity.status(200).body(likes);
     }
 }

@@ -145,6 +145,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/login/**",
                                 "/logout",
+                                "/users/*",
                                 "/exhibition/all",
                                 "/exhibition/*",
                                 "/photo/*",

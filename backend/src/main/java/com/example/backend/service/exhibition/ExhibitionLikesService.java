@@ -11,7 +11,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +67,7 @@ public class ExhibitionLikesService {
     @Transactional(readOnly = true)
     public ExhibitionLikesResponseDTO getLikeStatus(
             Long exhibitionId,
-            UserDetails userDetails
+            String email
     ) {
         Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
                 .orElseThrow(() -> new EntityNotFoundException("Exhibition not found"));
@@ -76,8 +75,8 @@ public class ExhibitionLikesService {
         long likeCount = exhibitionLikesRepository.countByExhibition(exhibition);
 
         boolean liked = false;
-        if (userDetails != null) {
-            Users user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        if (email != null) {
+            Users user = userRepository.findByEmail(email).orElseThrow();
             liked = exhibitionLikesRepository.existsByExhibitionAndUser(exhibition, user);
         }
 
